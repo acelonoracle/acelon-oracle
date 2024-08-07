@@ -1,17 +1,18 @@
 import { DEVIATION_THRESHOLD_PERCENT, MINIMUM_SOURCES, TRADE_AGE_LIMIT } from "../constants"
 import { PriceInfo, FetchPricesParams } from "../types"
 import { fetchPrice } from "../utils/fetch"
-import { median, normalize, percentDifference } from "../utils/math"
+import { aggregatePrice, normalize, relativePriceDifference } from "../utils/math"
 
 export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[]> {
   console.log("Starting fetchPrices with params:", JSON.stringify(params))
 
-  const deviationThresholdPercent = params.deviationThresholdPercent || DEVIATION_THRESHOLD_PERCENT
+  const maxDeviationPercent = params.maxDeviationPercent || DEVIATION_THRESHOLD_PERCENT
   const tradeAgeLimit = params.tradeAgeLimit || TRADE_AGE_LIMIT
-  const minimumSources = params.minimumSources || MINIMUM_SOURCES
+  const minSources = params.minSources || MINIMUM_SOURCES
+  const aggregationType = params.aggregationType || "median"
 
   console.log(
-    `Using deviation threshold: ${deviationThresholdPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minimumSources}`
+    `Using deviation threshold: ${maxDeviationPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, aggregation type: ${aggregationType}`
   )
 
   const results = await Promise.all(
@@ -21,32 +22,30 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
         const prices = priceData.map((data) => data.price)
 
         if (prices.length === 0) {
-          console.warn(`No valid prices fetched for ${pair.from}-${pair.to}`)
-          return null // Return null for pairs with no valid prices
-        } else if (prices.length < minimumSources) {
-          console.warn(
-            `Not enough sources for ${pair.from}-${pair.to}, ${prices.length} / ${minimumSources} sources fetched`
+          throw new Error(`No valid prices fetched for ${pair.from}-${pair.to}`)
+        } else if (prices.length < minSources) {
+          throw new Error(
+            `Not enough sources for ${pair.from}-${pair.to}, ${prices.length} / ${minSources} sources fetched`
           )
-          return null // Return null for pairs with not enough sources
         }
 
         console.log(`Fetched ${prices.length} valid prices for ${pair.from}-${pair.to}`)
 
-        // Calculate median price
-        const medianPrice = normalize(median(prices))
-        console.log(`Calculated median price for ${pair.from}-${pair.to}: ${medianPrice}`)
+        // Calculate aggregated price
+        const aggregatedPrice = normalize(aggregatePrice(prices, aggregationType))
+        console.log(`Calculated ${aggregationType} price for ${pair.from}-${pair.to}: ${aggregatedPrice}`)
 
         const sources = priceData.map((data) => ({ exchangeId: data.exchangeId, certificate: data.certificate }))
 
-        let finalPrice = medianPrice
+        let finalPrice = aggregatedPrice
 
         // Check if we should use the client-provided price
         if (pair.price !== undefined) {
-          const deviation = percentDifference(medianPrice, pair.price)
-          console.log(`Deviation between median and client price: ${deviation}%`)
+          const deviation = relativePriceDifference(aggregatedPrice, pair.price)
+          console.log(`Deviation between ${aggregationType} and client price: ${deviation}%`)
 
-          if (deviation <= deviationThresholdPercent) {
-            console.log(`Price withing threshold , using client-provided price for ${pair.from}-${pair.to}`)
+          if (deviation <= maxDeviationPercent) {
+            console.log(`Price within threshold, using client-provided price for ${pair.from}-${pair.to}`)
             finalPrice = pair.price
           } else {
             console.log(`Client price deviation too high, using oracle price for ${pair.from}-${pair.to}`)
@@ -59,20 +58,17 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
           price: finalPrice,
           timestamp: Math.floor(Date.now() / 1000),
           sources,
+          rawPrices: prices,
         }
 
         console.log(`Final price info for ${pair.from}-${pair.to}:`, JSON.stringify(priceInfo))
         return priceInfo
       } catch (error) {
         console.error(`❌ Error fetching price for ${pair.from}-${pair.to}:`, error)
-        return null // Return null for pairs with errors
+        throw error // Re-throw the error to be caught by the Promise.all
       }
     })
   )
 
-  // Filter out null results
-  const validResults = results.filter((result): result is PriceInfo => result !== null)
-  console.log(`Fetched valid prices for ${validResults.length} out of ${params.pairs.length} pairs`)
-
-  return validResults
+  return results
 }

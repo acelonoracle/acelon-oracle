@@ -27,12 +27,24 @@ export interface JsonRpcErrorResponse {
 export type JsonRpcResponse = JsonRpcSuccessResponse | JsonRpcErrorResponse
 
 // FetchPrices specific types
+export type AggregationType = 'median' | 'mean' | 'min' | 'max'
+
+export interface PriceInfo {
+  from: string
+  to: string
+  price: number
+  timestamp: number
+  sources: Array<{ exchangeId: string; certificate: string }>
+  rawPrices: number[]
+}
+
 export interface FetchPricesParams {
   pairs: Array<{ from: string; to: string; price?: number }>
-  exchanges?: string[] // Optional
-  minimumSources?: number // Optional
-  deviationThresholdPercent?: number // Optional
-  tradeAgeLimit?: number // Optional
+  exchanges?: string[]
+  minSources?: number
+  maxDeviationPercent?: number
+  tradeAgeLimit?: number
+  aggregationType?: AggregationType
 }
 
 export interface FetchPricesRequest extends JsonRpcRequestBase {

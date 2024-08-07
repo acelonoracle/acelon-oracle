@@ -7,7 +7,8 @@
     "start": "yarn run build && node ./dist/bundle.js",
     "build": "webpack",
     "bundle": "yarn run build",
-    "deploy": "acurast deploy"
+    "deploy": "acurast deploy",
+    "test": "jest"
   },
   "dependencies": {
     "ws": "^8.18.0"
@@ -16,9 +17,12 @@
     "@acurast/cli": "^0.0.7",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.1.0",
+    "jest": "^29.7.0",
     "prettier": "^3.3.3",
+    "ts-jest": "^29.2.4",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.4",
     "webpack": "^5.93.0",
     "webpack-cli": "^5.1.4"

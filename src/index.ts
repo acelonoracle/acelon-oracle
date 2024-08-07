@@ -10,27 +10,29 @@ async function handleRequest(request: JsonRpcRequest): Promise<JsonRpcResponse> 
   try {
     switch (request.method) {
       case "fetchPrices":
-        const priceInfos = await fetchPrices(request.params)
-        if (priceInfos.length === 0) {
+        try {
+          const priceInfos = await fetchPrices(request.params)
+          const signedPrices = await signPrices(priceInfos)
           return {
             jsonrpc: "2.0",
             id: request.id,
             result: {
-              priceInfos: [],
-              signedPrices: [],
+              priceInfos,
+              signedPrices,
               version: "1.0.0",
             },
           }
-        }
-        const signedPrices = await signPrices(priceInfos)
-        return {
-          jsonrpc: "2.0",
-          id: request.id,
-          result: {
-            priceInfos,
-            signedPrices,
-            version: "1.0.0",
-          },
+        } catch (error: any) {
+          // Handle specific errors from fetchPrices
+          return {
+            jsonrpc: "2.0",
+            id: request.id,
+            error: {
+              code: -32000, // Custom error code
+              message: "fetchPrices error",
+              data: error.message,
+            },
+          }
         }
       default: // Method not found
         return {
@@ -49,8 +51,8 @@ async function handleRequest(request: JsonRpcRequest): Promise<JsonRpcResponse> 
       id: request.id,
       error: {
         code: -32603,
-        message: error.message || "Internal error",
-        data: error.stack,
+        message: "Internal error",
+        data: error.message,
       },
     }
   }
