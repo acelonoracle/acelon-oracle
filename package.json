@@ -1,0 +1,27 @@
+{
+  "name": "acurast-oracle-service",
+  "version": "0.0.1",
+  "author": "Lorenzo Spoleti <l.spoelti@papers.ch>",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "start": "yarn run build && node ./dist/bundle.js",
+    "build": "webpack",
+    "bundle": "yarn run build",
+    "deploy": "acurast deploy"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@acurast/cli": "^0.0.7",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.1.0",
+    "prettier": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
+    "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "license": "MIT"
+}
