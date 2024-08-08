@@ -14,6 +14,8 @@ const GATE_IO_TEMPLATE = `https://api.gateio.ws/api/v4/spot/trades/?currency_pai
 const HTX_TEMPLATE = `https://api.huobi.pro/market/trade?symbol=<<FROM>><<TO>>`
 const MEXC_TEMPLATE = `https://api.mexc.com/api/v3/trades?symbol=<<FROM>><<TO>>&limit=1`
 const WHITEBIT_TEMPLATE = `https://whitebit.com/api/v4/public/trades/<<FROM>>_<<TO>>`
+const OKX_TEMPLATE = `https://www.okx.com/api/v5/market/trades?instId=<<FROM>>-<<TO>>&limit=1`
+const UPBIT_TEMPLATE = `https://api.upbit.com/v1/trades/ticks?market=<<TO>>-<<FROM>>&count=1`
 
 //API configs
 //the configs are used to fetch data from the exchanges
@@ -283,6 +285,46 @@ export const CONFIGS: ExchangeConfig[] = [
     },
     constructURL: (from, to) => {
       return WHITEBIT_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
+    },
+  },
+  {
+    name: "OKX",
+    exchange_id: "OKX",
+    type: "crypto",
+    extractPriceData: (data) => {
+      const timestampFactor = 1
+      const timestampIndex = 5
+      const priceIndex = 3
+
+      let priceData: any[] = Object.values(data["data"][0])
+
+      return {
+        timestamp: parseInt(priceData[timestampIndex]) * timestampFactor,
+        price: parseFloat(priceData[priceIndex]),
+      }
+    },
+    constructURL: (from, to) => {
+      return OKX_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
+    },
+  },
+  {
+    name: "UPBIT",
+    exchange_id: "UPB",
+    type: "crypto",
+    extractPriceData: (data) => {
+      const timestampFactor = 1
+      const timestampIndex = 3
+      const priceIndex = 4
+
+      let priceData: any[] = Object.values(data[0])
+
+      return {
+        timestamp: priceData[timestampIndex] * timestampFactor,
+        price: parseFloat(priceData[priceIndex]),
+      }
+    },
+    constructURL: (from, to) => {
+      return UPBIT_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
   },
 ]
