@@ -1,3 +1,5 @@
+import { AggregationType } from "./types"
+
 declare const _STD_: any
 
 //read the environment variables from ENV and have a default value if not set
@@ -11,3 +13,4 @@ export const PRICE_PRECISION = 10 ** 6
 export const DEVIATION_THRESHOLD_PERCENT = 0.05
 export const TRADE_AGE_LIMIT = 5 * 60 * 1000 // 5 min
 export const CACHE_DURATION = 60 * 1000 // 1 min
+export const AGGREGATION_TYPE: AggregationType = "median"

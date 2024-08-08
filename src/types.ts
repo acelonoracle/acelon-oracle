@@ -33,6 +33,7 @@ export interface PriceInfo {
   from: string
   to: string
   price: number
+  aggregations?: Partial<Record<AggregationType, number>>
   timestamp: number
   rawPrices: number[]
   stdDev: number
@@ -44,7 +45,8 @@ export interface FetchPricesParams {
   exchanges?: string[]
   minSources?: number
   tradeAgeLimit?: number
-  aggregationType?: AggregationType
+  aggregation?: AggregationType
+  additionalAggregations?: AggregationType[]
   maxSourcesDeviation?: number
   maxValidationDiff?: number
 }
