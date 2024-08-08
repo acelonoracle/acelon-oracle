@@ -14,7 +14,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@acurast/cli": "^0.0.7",
+    "@acurast/cli": "^0.0.8",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.1.0",
     "jest": "^29.7.0",

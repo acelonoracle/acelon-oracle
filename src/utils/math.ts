@@ -52,3 +52,10 @@ export function aggregatePrice(prices: number[], aggregationType: AggregationTyp
 export function normalize(value: number): number {
   return Math.round(value * PRICE_PRECISION)
 }
+
+export function standardDeviation(values: number[]): number {
+  const avg = mean(values)
+  const squareDiffs = values.map(value => Math.pow(value - avg, 2))
+  const avgSquareDiff = mean(squareDiffs)
+  return Math.sqrt(avgSquareDiff)
+}

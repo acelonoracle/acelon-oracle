@@ -1,18 +1,19 @@
 import { DEVIATION_THRESHOLD_PERCENT, MINIMUM_SOURCES, TRADE_AGE_LIMIT } from "../constants"
 import { PriceInfo, FetchPricesParams } from "../types"
 import { fetchPrice } from "../utils/fetch"
-import { aggregatePrice, normalize, relativePriceDifference } from "../utils/math"
+import { aggregatePrice, normalize, relativePriceDifference, standardDeviation } from "../utils/math"
 
 export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[]> {
   console.log("Starting fetchPrices with params:", JSON.stringify(params))
 
-  const maxDeviationPercent = params.maxDeviationPercent || DEVIATION_THRESHOLD_PERCENT
+  const maxValidationDiffPercent = params.maxValidationDiff || DEVIATION_THRESHOLD_PERCENT
   const tradeAgeLimit = params.tradeAgeLimit || TRADE_AGE_LIMIT
   const minSources = params.minSources || MINIMUM_SOURCES
   const aggregationType = params.aggregationType || "median"
+  const maxSourcesDeviation = params.maxSourcesDeviation
 
   console.log(
-    `Using deviation threshold: ${maxDeviationPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, aggregation type: ${aggregationType}`
+    `Using deviation threshold: ${maxValidationDiffPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, aggregation type: ${aggregationType}`
   )
 
   const results = await Promise.all(
@@ -26,6 +27,16 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
         } else if (prices.length < minSources) {
           throw new Error(
             `Not enough sources for ${pair.from}-${pair.to}, ${prices.length} / ${minSources} sources fetched`
+          )
+        }
+
+        // Calculate standard deviation
+        const stdDev = standardDeviation(prices)
+
+        // Check if standard deviation exceeds the maximum allowed
+        if (maxSourcesDeviation !== undefined && stdDev > maxSourcesDeviation) {
+          throw new Error(
+            `Standard deviation (${stdDev}) exceeds maximum allowed (${maxSourcesDeviation}) for ${pair.from}-${pair.to}`
           )
         }
 
@@ -44,7 +55,7 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
           const deviation = relativePriceDifference(aggregatedPrice, pair.price)
           console.log(`Deviation between ${aggregationType} and client price: ${deviation}%`)
 
-          if (deviation <= maxDeviationPercent) {
+          if (deviation <= maxValidationDiffPercent) {
             console.log(`Price within threshold, using client-provided price for ${pair.from}-${pair.to}`)
             finalPrice = pair.price
           } else {
@@ -57,8 +68,9 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
           to: pair.to,
           price: finalPrice,
           timestamp: Math.floor(Date.now() / 1000),
-          sources,
           rawPrices: prices,
+          stdDev: stdDev,
+          sources,
         }
 
         console.log(`Final price info for ${pair.from}-${pair.to}:`, JSON.stringify(priceInfo))
