@@ -10,9 +10,21 @@ async function handleRequest(request: JsonRpcRequest): Promise<JsonRpcResponse> 
   try {
     switch (request.method) {
       case "fetchPrices":
+        //check that required parameters are present
+        if (!request.params || !request.params.pairs || !request.params.protocol) {
+          return {
+            jsonrpc: "2.0",
+            id: request.id,
+            error: {
+              code: -32602,
+              message: "Missing required parameters",
+            },
+          }
+        }
+
         try {
           const priceInfos = await fetchPrices(request.params)
-          const signedPrices = await signPrices(priceInfos)
+          const signedPrices = await signPrices(priceInfos, request.params)
           return {
             jsonrpc: "2.0",
             id: request.id,

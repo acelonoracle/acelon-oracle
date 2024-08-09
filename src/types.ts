@@ -29,6 +29,8 @@ export type JsonRpcResponse = JsonRpcSuccessResponse | JsonRpcErrorResponse
 // FetchPrices specific types
 export type AggregationType = "median" | "mean" | "min" | "max"
 
+export type Protocol = "Substrate" | "EVM" | "WASM" | "Tezos"
+
 export interface PriceInfo {
   from: string
   to: string
@@ -42,6 +44,7 @@ export interface PriceInfo {
 
 export interface FetchPricesParams {
   pairs: Array<{ from: string; to: string; price?: number }>
+  protocol: Protocol
   exchanges?: string[]
   minSources?: number
   tradeAgeLimit?: number
@@ -57,7 +60,14 @@ export interface FetchPricesRequest extends JsonRpcRequestBase {
 }
 
 export interface SignedPrice {
-  pair: string
+  data: {
+    from: string
+    to: string
+    price: number
+    timestamp: number
+    sources: Array<{ exchangeId: string; certificate: string }>
+    requestHash: string
+  }
   packedPrice: string
   signature: string
 }
