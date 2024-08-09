@@ -1,4 +1,5 @@
 import { WSS_URLS } from "./constants"
+import { checkExchangeHealth } from "./methods/checkExchangeHealth"
 import { fetchPrices } from "./methods/fetchPrices"
 import { signPrices } from "./methods/signPrices"
 import { JsonRpcRequest, JsonRpcResponse, WebSocketPayload } from "./types"
@@ -42,6 +43,25 @@ async function handleRequest(request: JsonRpcRequest): Promise<JsonRpcResponse> 
             error: {
               code: -32000, // Custom error code
               message: "fetchPrices error",
+              data: error.message,
+            },
+          }
+        }
+      case "checkExchangeHealth":
+        try {
+          const healthStatuses = await checkExchangeHealth(request.params)
+          return {
+            jsonrpc: "2.0",
+            id: request.id,
+            result: { healthStatuses },
+          }
+        } catch (error: any) {
+          return {
+            jsonrpc: "2.0",
+            id: request.id,
+            error: {
+              code: -32000,
+              message: "checkExchangeHealth error",
               data: error.message,
             },
           }

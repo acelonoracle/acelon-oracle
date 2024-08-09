@@ -41,6 +41,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return BINANCE_US_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.binance.us/api/v3/ping",
+    validateHealthResponse: (response) => response === "{}",
   },
   {
     name: "Binance",
@@ -61,6 +63,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return BINANCE_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.binance.com/api/v3/ping",
+    validateHealthResponse: (response) => response === "{}",
   },
   {
     name: "Coinbase",
@@ -82,6 +86,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return COINBASE_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.pro.coinbase.com/health",
+    validateHealthResponse: (response) => JSON.parse(response).status === "healthy",
   },
   {
     name: "Bitfinex",
@@ -105,6 +111,8 @@ export const CONFIGS: ExchangeConfig[] = [
 
       return BITFINEX_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api-pub.bitfinex.com/v2/platform/status",
+    validateHealthResponse: (response) => JSON.parse(response)[0] === 1,
   },
   {
     name: "Kraken",
@@ -126,6 +134,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return KRAKEN_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.kraken.com/0/public/SystemStatus",
+    validateHealthResponse: (response) => JSON.parse(response).result.status === "online",
   },
   {
     name: "Bybit",
@@ -146,6 +156,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return BYBIT_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.bybit.com/v5/market/time",
+    validateHealthResponse: (response) => JSON.parse(response).retCode === 0,
   },
   {
     name: "Gemini",
@@ -166,6 +178,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return GEMINI_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.gemini.com/v1/symbols",
+    validateHealthResponse: (response) => Array.isArray(JSON.parse(response)),
   },
   {
     name: "Kucoin",
@@ -186,6 +200,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return KUCOIN_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.kucoin.com/api/v1/timestamp",
+    validateHealthResponse: (response) => JSON.parse(response).code === "200000",
   },
   {
     name: "Gate IO",
@@ -206,6 +222,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return GATE_IO_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.gateio.ws/api/v4/spot/currencies",
+    validateHealthResponse: (response) => Array.isArray(JSON.parse(response)),
   },
   {
     name: "Crypto.com",
@@ -226,6 +244,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return CRYPTO_COM_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.crypto.com/exchange/v1/public/get-instruments",
+    validateHealthResponse: (response) => JSON.parse(response).result.data.length > 0,
   },
   {
     name: "HTX",
@@ -246,6 +266,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return HTX_TEMPLATE.replace("<<FROM>>", from.toLowerCase()).replace("<<TO>>", to.toLowerCase())
     },
+    healthEndpoint: "https://api.huobi.pro/v1/common/timestamp",
+    validateHealthResponse: (response) => JSON.parse(response).status === "ok",
   },
   {
     name: "MEXC",
@@ -266,6 +288,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return MEXC_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.mexc.com/api/v3/time",
+    validateHealthResponse: (response) => "serverTime" in JSON.parse(response),
   },
   {
     name: "Whitebit",
@@ -286,6 +310,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return WHITEBIT_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://whitebit.com/api/v4/public/time",
+    validateHealthResponse: (response) => "time" in JSON.parse(response),
   },
   {
     name: "OKX",
@@ -306,6 +332,8 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return OKX_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://www.okx.com/api/v5/public/time",
+    validateHealthResponse: (response) => JSON.parse(response).code === "0",
   },
   {
     name: "UPBIT",
@@ -326,5 +354,7 @@ export const CONFIGS: ExchangeConfig[] = [
     constructURL: (from, to) => {
       return UPBIT_TEMPLATE.replace("<<FROM>>", from).replace("<<TO>>", to)
     },
+    healthEndpoint: "https://api.upbit.com/v1/market/all",
+    validateHealthResponse: (response) => Array.isArray(JSON.parse(response)),
   },
 ]

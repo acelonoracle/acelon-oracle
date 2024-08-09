@@ -1,11 +1,11 @@
 // Base JSON-RPC types
-export type JsonRpcRequest = FetchPricesRequest
+export type JsonRpcRequest = FetchPricesRequest | CheckExchangeHealthRequest | JsonRpcRequestBase
 
 export interface JsonRpcRequestBase {
   jsonrpc: "2.0"
   id: string | number
   method: string
-  params: any
+  params?: any
 }
 
 export interface JsonRpcSuccessResponse {
@@ -26,7 +26,7 @@ export interface JsonRpcErrorResponse {
 
 export type JsonRpcResponse = JsonRpcSuccessResponse | JsonRpcErrorResponse
 
-// FetchPrices specific types
+// FetchPrices Types
 export type AggregationType = "median" | "mean" | "min" | "max"
 
 export type Protocol = "Substrate" | "EVM" | "WASM" | "Tezos"
@@ -78,6 +78,26 @@ export interface FetchPricesResult {
   version: string
 }
 
+// CheckExchangeHealth Types
+export interface CheckExchangeHealthParams {
+  exchanges: string[]
+}
+
+export interface CheckExchangeHealthRequest extends JsonRpcRequestBase {
+  method: "checkExchangeHealth"
+  params?: CheckExchangeHealthParams
+}
+
+export interface ExchangeHealthStatus {
+  exchangeId: string
+  status: "up" | "down"
+  responseTime?: number
+}
+
+export interface CheckExchangeHealthResult {
+  healthStatuses: ExchangeHealthStatus[]
+}
+
 // Other types
 export interface WebSocketPayload {
   sender: string
@@ -91,4 +111,6 @@ export interface ExchangeConfig {
   type: "crypto"
   extractPriceData: (data: any) => { timestamp: number; price: number }
   constructURL: (from: string, to: string) => string
+  healthEndpoint: string
+  validateHealthResponse: (response: string) => boolean
 }
