@@ -7,15 +7,18 @@ Acurast Oracle is a decentralized price oracle service built on the Acurast netw
 ## Features
 
 - Fetches price data from multiple cryptocurrency exchanges
+- Implements caching to optimize performance and reduce API calls
 - Supports various aggregation methods (median, mean, min, max)
 - Allows price validation
 - Allows custom configuration of data sources and parameters
 - Provides signed price data for on-chain verification
-
+- Supports multiple blockchain protocols (Substrate, EVM, WASM, Tezos)
+- Includes exchange API health checking functionality
 
 ## Installation
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/acurast/acurast-oracle-service.git
    cd acurast-oracle-service
@@ -52,12 +55,12 @@ To fetch prices, send a JSON-RPC request with the following structure:
       { "from": "BTC", "to": "USD" },
       { "from": "ETH", "to": "USD" }
     ],
+    "protocol": "Substrate",
     "exchanges": ["BNC", "CBP", "BFX"],
-    "aggregationType": "median",
+    "aggregation": ["median", "mean"],
     "minSources": 3,
     "tradeAgeLimit": 300000,
-    "maxSourcesDeviation": 0.05,
-    "maxValidationDiff": 0.05
+    "maxValidationDiff": 0.1
   }
 }
 ```
@@ -65,14 +68,25 @@ To fetch prices, send a JSON-RPC request with the following structure:
 #### Parameters Explanation
 
 - `pairs`: An array of currency pairs to fetch prices for. Each pair consists of:
+
   - `from`: The base currency (e.g., "BTC")
   - `to`: The quote currency (e.g., "USD")
-  - `price` (optional): A client-provided price for validation
+  - `price` (optional): A client-provided price(s) for validation.
+
+    The prices have to match the aggregation types that were requested. Provide prices that match requested aggregations in the same order.
+
+- `protocol`: The blockchain protocol for which to generate signed price data. Possible values are:
+
+  - `"Substrate"`
+  - `"EVM"`
+  - `"WASM"`
+  - `"Tezos"`
 
 - `exchanges` (optional): An array of exchange IDs to fetch prices from. If not provided, all available exchanges will be used.
 
-- `aggregationType` (optional): The method used to aggregate prices from multiple sources. Possible values are:
-  - `"median"` (default)
+- `aggregation`: The method(s) used to aggregate prices from multiple sources. Can be a single value or an array. Possible values are:
+
+  - `"median"` (default if not specified)
   - `"mean"`
   - `"min"`
   - `"max"`
@@ -83,14 +97,14 @@ To fetch prices, send a JSON-RPC request with the following structure:
 
 - `maxSourcesDeviation` (optional): The maximum allowed standard deviation among prices from different sources. If exceeded, an error is thrown.
 
-- `maxValidationDiff` (optional): The maximum allowed percentage difference between the aggregated price and a client-provided price (if given). Default is 0.05%.
+- `maxValidationDiff` (optional): The maximum allowed percentage difference between the aggregated price and a client-provided price (if given). Default is 0.05 (5%).
 
 ### Supported Exchanges
 
 The oracle supports fetching price data from the following exchanges:
 
-| Exchange ID | Exchange Name | 
-|-------------|---------------|
+| Exchange ID | Exchange Name |
+| ----------- | ------------- |
 | BNU         | Binance US    |
 | BNC         | Binance       |
 | CBP         | Coinbase      |
@@ -120,7 +134,10 @@ The `fetchPrices` method returns a JSON-RPC response with the following structur
       {
         "from": "BTC",
         "to": "USD",
-        "price": 50000000000,
+        "price": {
+          "median": 50000000000,
+          "mean": 50010000000
+        },
         "timestamp": 1623456789,
         "rawPrices": [49950.5, 50100.75, 49980.25],
         "stdDev": 64.33,
@@ -133,7 +150,18 @@ The `fetchPrices` method returns a JSON-RPC response with the following structur
     ],
     "signedPrices": [
       {
-        "pair": "BTCUSD",
+        "data": {
+          "from": "BTC",
+          "to": "USD",
+          "price": [50000000000, 50010000000],
+          "timestamp": 1623456789,
+          "sources": [
+            { "exchangeId": "BNC", "certificate": "..." },
+            { "exchangeId": "CBP", "certificate": "..." },
+            { "exchangeId": "BFX", "certificate": "..." }
+          ],
+          "requestHash": "..."
+        },
         "packedPrice": "...",
         "signature": "..."
       }
@@ -144,17 +172,42 @@ The `fetchPrices` method returns a JSON-RPC response with the following structur
 ```
 
 - `priceInfos`: An array of price information for each requested pair.
-  - `price`: The aggregated price, normalized to 6 decimal places.
-  - `timestamp`: The Unix timestamp of the price data.
-  - `rawPrices`: An array of individual prices from each source before aggregation.
+
+  - `price`: An object containing the aggregated prices for each requested aggregation method, normalized to 6 decimal places.
+  - `validation`: An object indicating whether each aggregated price passed the validation check against the client-provided price.
+  - `timestamp`: The Unix timestamp of the price data in milliseconds.
+  - `rawPrices`: An array of the prices from each source before aggregation.
   - `stdDev`: The standard deviation of the raw prices.
-  - `sources`: Information about the exchanges that provided the price data.
+  - `sources`: Map with exchangeId to api certificate.
 
 - `signedPrices`: An array of signed price data for on-chain verification.
-  - `packedPrice`: The price data packed into a binary format.
+
+  - `data`: The price data that was signed, including the hash of the request parameters.
+  - `packedPrice`: The price data packed into the specific chain format.
   - `signature`: The signature of the packed price data.
 
 - `version`: The version of the oracle software.
+
+### Checking Exchange Health
+
+To check the health status of exchanges, send a JSON-RPC request with the following structure:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "checkExchangeHealth",
+  "params": {
+    "exchanges": ["BNU", "CBP", "KRK"]
+  }
+}
+```
+
+#### Parameters Explanation
+
+- `exchanges` (optional): An array of exchange IDs to check. If not provided, all configured exchanges will be checked.
+
+The response will include the health status and response time (if available) for each requested exchange.
 
 ## Error Handling
 
@@ -172,11 +225,7 @@ If there's an error during the price fetching process, the oracle will return an
 }
 ```
 
-Common error scenarios include:
-- Insufficient number of valid price sources
-- Excessive price deviation among sources
-- Network issues when fetching from exchanges
-
+The error codes follow the JSON RPC 2.0 standard
 
 ## Development
 
@@ -195,7 +244,7 @@ To add a new exchange:
 1. Add the exchange configuration to `src/config/exchanges.ts`
 2. Implement the `extractPriceData` function for the new exchange
 3. Add any necessary URL templates
-
+4. Implement the `healthEndpoint` and `validateHealthResponse` functions for the new exchange
 
 ### Testing
 

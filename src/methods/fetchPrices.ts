@@ -1,29 +1,56 @@
-import { AGGREGATION_TYPE, DEVIATION_THRESHOLD_PERCENT, MINIMUM_SOURCES, TRADE_AGE_LIMIT } from "../constants"
-import { PriceInfo, FetchPricesParams, AggregationType } from "../types"
-import { fetchPrice } from "../utils/fetch"
-import { aggregatePrice, normalize, relativePriceDifference, standardDeviation } from "../utils/math"
+import {
+  AGGREGATION_TYPE,
+  DEVIATION_THRESHOLD_PERCENT,
+  MINIMUM_SOURCES,
+  TRADE_AGE_LIMIT,
+} from '../constants'
+import { PriceInfo, FetchPricesParams, AggregationType } from '../types'
+import { fetchPrice } from '../utils/fetch'
+import {
+  aggregatePrice,
+  normalize,
+  relativePriceDifference,
+  standardDeviation,
+} from '../utils/math'
 
-export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[]> {
-  console.log("Starting fetchPrices with params:", JSON.stringify(params))
+export async function fetchPrices(
+  params: FetchPricesParams
+): Promise<PriceInfo[]> {
+  console.log('Starting fetchPrices with params:', JSON.stringify(params))
 
-  const maxValidationDiffPercent = params.maxValidationDiff || DEVIATION_THRESHOLD_PERCENT
+  const maxValidationDiffPercent =
+    params.maxValidationDiff || DEVIATION_THRESHOLD_PERCENT
   const tradeAgeLimit = params.tradeAgeLimit || TRADE_AGE_LIMIT
   const minSources = params.minSources || MINIMUM_SOURCES
-  const mainAggregationType = params.aggregation || AGGREGATION_TYPE
   const maxSourcesDeviation = params.maxSourcesDeviation
 
-  const aggregationTypes: AggregationType[] = Array.from(
-    new Set([mainAggregationType, ...(params.additionalAggregations || [])])
-  )
+  const aggregationTypes =
+    params.aggregation === undefined
+      ? [AGGREGATION_TYPE]
+      : Array.isArray(params.aggregation)
+        ? params.aggregation
+        : [params.aggregation]
 
   console.log(
-    `Using deviation threshold: ${maxValidationDiffPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, main aggregation type: ${mainAggregationType}, all aggregation types: ${aggregationTypes.join(", ")}`
+    `Using deviation threshold: ${maxValidationDiffPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, aggregation types: ${aggregationTypes.join(', ')}`
   )
 
   const results = await Promise.all(
     params.pairs.map(async (pair) => {
+      const clientPrices = Array.isArray(pair.price) ? pair.price : [pair.price]
+      if (clientPrices.length !== aggregationTypes.length) {
+        throw new Error(
+          `Number of client prices (${clientPrices.length}) does not match number of aggregation types (${aggregationTypes.length})`
+        )
+      }
+
       try {
-        const priceData = await fetchPrice(pair.from, pair.to, params.exchanges, tradeAgeLimit)
+        const priceData = await fetchPrice(
+          pair.from,
+          pair.to,
+          params.exchanges,
+          tradeAgeLimit
+        )
         const prices = priceData.map((data) => data.price)
 
         if (prices.length === 0) {
@@ -44,50 +71,77 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
           )
         }
 
-        console.log(`Fetched ${prices.length} valid prices for ${pair.from}-${pair.to}`)
+        console.log(
+          `Fetched ${prices.length} valid prices for ${pair.from}-${pair.to}`
+        )
 
-        // Calculate additional aggregations if requested
-        let aggregations: Partial<Record<AggregationType, number>> | undefined = undefined
-        if (params.additionalAggregations && aggregationTypes.length > 1) {
-          aggregations = {}
-          for (const aggType of aggregationTypes) {
-            aggregations[aggType] = normalize(aggregatePrice(prices, aggType))
+        const sources = priceData.map((data) => ({
+          exchangeId: data.exchangeId,
+          certificate: data.certificate,
+        }))
+
+        // Calculate prices for all aggregation types
+        const calculatedPrices: Partial<Record<AggregationType, number>> = {}
+        let validations: Partial<Record<AggregationType, boolean>> | undefined =
+          undefined
+
+        aggregationTypes.forEach((aggType, index) => {
+          const calculatedPrice = normalize(aggregatePrice(prices, aggType))
+          calculatedPrices[aggType] = calculatedPrice
+
+          // Validate against client-provided price if available
+          if (pair.price !== undefined) {
+            const clientPrice = clientPrices[index]
+
+            if (clientPrice !== undefined) {
+              if (!validations) validations = {}
+              const deviation = relativePriceDifference(
+                calculatedPrice,
+                clientPrice
+              )
+              console.log(`Deviation for ${aggType}: ${deviation}%`)
+              const isValid = deviation <= maxValidationDiffPercent
+              validations[aggType] = isValid
+
+              if (isValid) {
+                calculatedPrices[aggType] = clientPrice
+                console.log(
+                  `Using client-provided price for ${pair.from}-${pair.to} (${aggType})`
+                )
+              } else {
+                console.log(
+                  `Client price deviation too high for ${pair.from}-${pair.to} (${aggType}), using oracle price`
+                )
+              }
+            }
           }
-        }
-
-        const sources = priceData.map((data) => ({ exchangeId: data.exchangeId, certificate: data.certificate }))
-
-        // Set the main price
-        let mainPrice = normalize(aggregatePrice(prices, mainAggregationType))
-
-        // Check if we should use the client-provided price
-        if (pair.price !== undefined) {
-          const deviation = relativePriceDifference(mainPrice, pair.price)
-          console.log(`Deviation between ${mainAggregationType} and client price: ${deviation}%`)
-
-          if (deviation <= maxValidationDiffPercent) {
-            console.log(`Price within threshold, using client-provided price for ${pair.from}-${pair.to}`)
-            mainPrice = pair.price
-          } else {
-            console.log(`Client price deviation too high, using oracle price for ${pair.from}-${pair.to}`)
-          }
-        }
+        })
 
         const priceInfo: PriceInfo = {
           from: pair.from,
           to: pair.to,
-          price: mainPrice,
-          timestamp: Math.floor(Date.now() / 1000),
+          price: calculatedPrices,
+          timestamp: Date.now(),
           rawPrices: prices,
-          aggregations,
           stdDev: stdDev,
           sources,
         }
 
-        console.log(`Final price info for ${pair.from}-${pair.to}:`, JSON.stringify(priceInfo))
+        // Only include validations if they exist
+        if (validations) {
+          priceInfo.validation = validations
+        }
+
+        console.log(
+          `Final price info for ${pair.from}-${pair.to}:`,
+          JSON.stringify(priceInfo)
+        )
         return priceInfo
       } catch (error) {
-        console.error(`❌ Error fetching price for ${pair.from}-${pair.to}:`, error)
+        console.error(
+          `❌ Error fetching price for ${pair.from}-${pair.to}:`,
+          error
+        )
         throw error // Re-throw the error to be caught by the Promise.all
       }
     })

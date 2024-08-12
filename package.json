@@ -11,6 +11,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "rlp": "^3.0.0",
+    "scale-ts": "^1.6.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
