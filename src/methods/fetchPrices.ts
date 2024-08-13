@@ -1,3 +1,4 @@
+import { log } from 'console'
 import {
   AGGREGATION_TYPE,
   DEVIATION_THRESHOLD_PERCENT,
@@ -16,7 +17,7 @@ import {
 export async function fetchPrices(
   params: FetchPricesParams
 ): Promise<PriceInfo[]> {
-  console.log('Starting fetchPrices with params:', JSON.stringify(params))
+  log(`Starting fetchPrices with params: ${JSON.stringify(params)}`)
 
   const maxValidationDiffPercent =
     params.maxValidationDiff || DEVIATION_THRESHOLD_PERCENT
@@ -31,7 +32,7 @@ export async function fetchPrices(
         ? params.aggregation
         : [params.aggregation]
 
-  console.log(
+  log(
     `Using deviation threshold: ${maxValidationDiffPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, aggregation types: ${aggregationTypes.join(', ')}`
   )
 
@@ -71,9 +72,7 @@ export async function fetchPrices(
           )
         }
 
-        console.log(
-          `Fetched ${prices.length} valid prices for ${pair.from}-${pair.to}`
-        )
+        log(`Fetched ${prices.length} valid prices for ${pair.from}-${pair.to}`)
 
         const sources = priceData.map((data) => ({
           exchangeId: data.exchangeId,
@@ -99,17 +98,18 @@ export async function fetchPrices(
                 calculatedPrice,
                 clientPrice
               )
-              console.log(`Deviation for ${aggType}: ${deviation}%`)
+              log(`Deviation for ${aggType}: ${deviation}%`)
+
               const isValid = deviation <= maxValidationDiffPercent
               validations[aggType] = isValid
 
               if (isValid) {
                 calculatedPrices[aggType] = clientPrice
-                console.log(
+                log(
                   `Using client-provided price for ${pair.from}-${pair.to} (${aggType})`
                 )
               } else {
-                console.log(
+                log(
                   `Client price deviation too high for ${pair.from}-${pair.to} (${aggType}), using oracle price`
                 )
               }
@@ -132,15 +132,14 @@ export async function fetchPrices(
           priceInfo.validation = validations
         }
 
-        console.log(
-          `Final price info for ${pair.from}-${pair.to}:`,
-          JSON.stringify(priceInfo)
+        log(
+          `Final price info for ${pair.from}-${pair.to}: ${JSON.stringify(priceInfo)}`
         )
         return priceInfo
       } catch (error) {
-        console.error(
-          `❌ Error fetching price for ${pair.from}-${pair.to}:`,
-          error
+        log(
+          `❌ Error fetching price for ${pair.from}-${pair.to}: ${error}`,
+          'error'
         )
         throw error // Re-throw the error to be caught by the Promise.all
       }

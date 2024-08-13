@@ -1,4 +1,5 @@
-import { CACHE_DURATION } from "../constants"
+import { log } from 'console'
+import { CACHE_DURATION } from '../constants'
 
 interface CacheEntry {
   price: number
@@ -12,35 +13,41 @@ export class Cache {
 
   constructor(cacheDuration: number = CACHE_DURATION) {
     this.cacheDuration = cacheDuration
-    console.log(`🌴 Cache initialized with duration: ${this.cacheDuration}ms`)
+    log(`🌴 Cache initialized with duration: ${this.cacheDuration}ms`)
   }
 
   private getKey(from: string, to: string, exchangeId: string): string {
     return `${from}-${to}-${exchangeId}`
   }
 
-  set(from: string, to: string, exchangeId: string, price: number, certificate: string): void {
+  set(
+    from: string,
+    to: string,
+    exchangeId: string,
+    price: number,
+    certificate: string
+  ): void {
     const key = this.getKey(from, to, exchangeId)
     this.cache.set(key, {
       price,
       timestamp: Date.now(),
       sources: [{ exchangeId, certificate }],
     })
-    console.log(`🗿 Cache entry set for ${key}: price=${price}`)
+    log(`🗿 Cache entry set for ${key}: price=${price}`)
   }
 
   get(from: string, to: string, exchangeId: string): CacheEntry | undefined {
     const key = this.getKey(from, to, exchangeId)
     const entry = this.cache.get(key)
     if (entry && Date.now() - entry.timestamp < this.cacheDuration) {
-      console.log(`🎯 Cache hit for ${key}: price=${entry.price}`)
+      log(`🎯 Cache hit for ${key}: price=${entry.price}`)
       return entry
     }
     if (entry) {
-      console.log(`⌛️ Cache entry expired for ${key}`)
+      log(`⌛️ Cache entry expired for ${key}`)
       this.cache.delete(key)
     } else {
-      console.log(`🌊 Cache miss for ${key}`)
+      log(`🌊 Cache miss for ${key}`)
     }
     return undefined
   }
@@ -48,7 +55,7 @@ export class Cache {
   getAll(from: string, to: string, exchanges?: string[]): CacheEntry[] {
     const results: CacheEntry[] = []
     const prefix = `${from}-${to}-`
-    console.log(`Fetching all cache entries for ${from}-${to}`)
+    log(`Fetching all cache entries for ${from}-${to}`)
 
     for (const [key, value] of this.cache.entries()) {
       if (key.startsWith(prefix)) {
@@ -56,16 +63,16 @@ export class Cache {
         if (!exchanges || exchanges.includes(exchangeId)) {
           if (Date.now() - value.timestamp < this.cacheDuration) {
             results.push(value)
-            console.log(`🎯 Valid cache entry found for ${key}`)
+            log(`🎯 Valid cache entry found for ${key}`)
           } else {
-            console.log(`⌛️ Expired cache entry removed for ${key}`)
+            log(`⌛️ Expired cache entry removed for ${key}`)
             this.cache.delete(key)
           }
         }
       }
     }
 
-    console.log(`Found ${results.length} valid cache entries for ${from}-${to}`)
+    log(`Found ${results.length} valid cache entries for ${from}-${to}`)
     return results
   }
 }

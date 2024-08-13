@@ -1,6 +1,7 @@
-import { CONFIGS } from "../config/exchanges"
-import { ExchangeConfig } from "../types"
-import { cache } from "./cache"
+import { CONFIGS } from '../config/exchanges'
+import { ExchangeConfig } from '../types'
+import { cache } from './cache'
+import { log } from './sentry'
 
 declare const httpGET: any
 
@@ -11,40 +12,61 @@ export async function fetchPrice(
   exchanges?: string[],
   tradeAgeLimit?: number
 ): Promise<Array<{ price: number; exchangeId: string; certificate: string }>> {
-  console.log(`👀 Fetching price for ${from}-${to}`)
+  log(`👀 Fetching price for ${from}-${to}`)
 
   // Filter configs based on specified exchanges (if any)
-  const filteredConfigs = exchanges ? CONFIGS.filter((config) => exchanges.includes(config.exchange_id)) : CONFIGS
-  console.log(
-    `Using ${filteredConfigs.length} exchange configs : ${filteredConfigs.map((config) => config.name).join(", ")}`
+  const filteredConfigs = exchanges
+    ? CONFIGS.filter((config) => exchanges.includes(config.exchange_id))
+    : CONFIGS
+  log(
+    `Using ${filteredConfigs.length} exchange configs : ${filteredConfigs.map((config) => config.name).join(', ')}`
   )
 
   // Check cache for existing entries
   const cachedEntries = cache.getAll(from, to, exchanges)
-  const cachedExchangeIds = new Set(cachedEntries.flatMap((entry) => entry.sources.map((source) => source.exchangeId)))
+  const cachedExchangeIds = new Set(
+    cachedEntries.flatMap((entry) =>
+      entry.sources.map((source) => source.exchangeId)
+    )
+  )
 
   // Determine which configs need to be fetched (not in cache)
-  const configsToFetch = filteredConfigs.filter((config) => !cachedExchangeIds.has(config.exchange_id))
-  console.log(
-    `Fetching from ${configsToFetch.length} exchanges : ${configsToFetch.map((config) => config.name).join(", ")}`
+  const configsToFetch = filteredConfigs.filter(
+    (config) => !cachedExchangeIds.has(config.exchange_id)
+  )
+  log(
+    `Fetching from ${configsToFetch.length} exchanges : ${configsToFetch.map((config) => config.name).join(', ')}`
   )
 
   // Fetch prices from APIs for non-cached exchanges
-  const promises = configsToFetch.map((config) => fetch(config, from, to, tradeAgeLimit))
+  const promises = configsToFetch.map((config) =>
+    fetch(config, from, to, tradeAgeLimit)
+  )
   const results = await Promise.allSettled(promises)
 
   // Process fetched results
   const fetchedResults = results
-    .filter((result): result is PromiseFulfilledResult<{ price: number; exchangeId: string; certificate: string }> => {
-      if (result.status === "rejected") {
-        console.error(`Error fetching price for ${from}-${to} from exchange:`, result.reason)
-        return false
+    .filter(
+      (
+        result
+      ): result is PromiseFulfilledResult<{
+        price: number
+        exchangeId: string
+        certificate: string
+      }> => {
+        if (result.status === 'rejected') {
+          log(
+            `❌ Error fetching price for ${from}-${to} from exchange: ${result.reason}`,
+            'error'
+          )
+          return false
+        }
+        return true
       }
-      return true
-    })
+    )
     .map((result) => result.value)
 
-  console.log(`✅ Successfully fetched ${fetchedResults.length} new prices`)
+  log(`✅ Successfully fetched ${fetchedResults.length} new prices`)
 
   // Combine cached and fetched results
   return [
@@ -67,7 +89,7 @@ async function fetch(
   tradeAgeLimit?: number
 ): Promise<{ price: number; exchangeId: string; certificate: string }> {
   return new Promise((resolve, reject) => {
-    console.log(`🌍 Fetching price from ${config.name} for ${from}-${to}`)
+    log(`🌍 Fetching price from ${config.name} for ${from}-${to}`)
 
     // Check cache first
     const cachedEntry = cache.get(from, to, config.exchange_id)
@@ -84,26 +106,39 @@ async function fetch(
     httpGET(
       config.constructURL(from, to),
       {
-        "user-agent":
-          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36",
+        'user-agent':
+          'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36',
       },
       (rawResponse: string, certificate: string) => {
         try {
-          console.log(`Received response from ${config.name}`)
+          log(`Received response from ${config.name}`)
           const response = JSON.parse(rawResponse)
           const priceData = config.extractPriceData(response)
-          console.log(`Extracted price data from ${config.name}: ${JSON.stringify(priceData)}`)
+          log(
+            `Extracted price data from ${config.name}: ${JSON.stringify(priceData)}`
+          )
 
           if (isNaN(priceData.price)) {
-            throw new Error(`Invalid price data from ${config.name}: ${priceData.price}`)
+            throw new Error(
+              `Invalid price data from ${config.name}: ${priceData.price}`
+            )
           }
 
-          if (tradeAgeLimit && Date.now() - priceData.timestamp > tradeAgeLimit) {
-            console.log(`🚨 Trade age exceeds limit for ${config.name}`)
+          if (
+            tradeAgeLimit &&
+            Date.now() - priceData.timestamp > tradeAgeLimit
+          ) {
+            log(`🚨 Trade age exceeds limit for ${config.name}`, 'warn')
             reject(new Error(`Trade age exceeds limit for ${config.name}`))
           } else {
             // Cache the fetched price
-            cache.set(from, to, config.exchange_id, priceData.price, certificate)
+            cache.set(
+              from,
+              to,
+              config.exchange_id,
+              priceData.price,
+              certificate
+            )
             resolve({
               price: priceData.price,
               exchangeId: config.exchange_id,
@@ -111,12 +146,15 @@ async function fetch(
             })
           }
         } catch (error) {
-          console.error(`❌ Error processing response from ${config.name}:`, error)
+          log(
+            `❌ Error processing response from ${config.name}: ${error}`,
+            'error'
+          )
           reject(error)
         }
       },
       (errorMessage: string) => {
-        console.error(`❌ HTTP GET error for ${config.name}:`, errorMessage)
+        log(`❌ HTTP GET error for ${config.name}: ${errorMessage}`, 'error')
         reject(new Error(`${config.name}: ${errorMessage}`))
       }
     )
