@@ -55,7 +55,7 @@ export interface FetchPricesParams {
   exchanges?: string[]
   minSources?: number
   tradeAgeLimit?: number
-  aggregation: AggregationType | AggregationType[]
+  aggregation?: AggregationType | AggregationType[]
   maxSourcesDeviation?: number
   maxValidationDiff?: number
 }
