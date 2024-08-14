@@ -35,7 +35,7 @@ function signPriceForProtocol(
   protocol: Protocol,
   requestHash: string
 ): SignedPrice {
-  const data = {
+  const priceData = {
     from: priceInfo.from,
     to: priceInfo.to,
     price: Object.values(priceInfo.price),
@@ -52,25 +52,25 @@ function signPriceForProtocol(
       case 'Substrate':
       case 'WASM':
         // Pack data into SCALE format using scale-ts
-        const scaleEncoded = PriceInfoCodec.enc(data)
+        const scaleEncoded = PriceInfoCodec.enc(priceData)
         packedPrice = sha256(scaleEncoded)
         signature = _STD_.signers.secp256k1.sign(packedPrice)
         break
       case 'EVM':
         // Pack data into RLP format
         const rlpEncoded = RLP.encode([
-          data.from,
-          data.to,
-          data.price.map((p) => p.toString()),
-          data.timestamp.toString(),
-          data.sources.map((s) => [s.exchangeId, s.certificate]),
-          data.requestHash,
+          priceData.from,
+          priceData.to,
+          priceData.price.map((p) => p.toString()),
+          priceData.timestamp.toString(),
+          priceData.sources.map((s) => [s.exchangeId, s.certificate]),
+          priceData.requestHash,
         ])
         packedPrice = sha256(rlpEncoded)
         signature = _STD_.signers.secp256k1.sign(packedPrice)
         break
       case 'Tezos':
-        packedPrice = _STD_.chains.tezos.encoding.pack([data])
+        packedPrice = _STD_.chains.tezos.encoding.pack([priceData])
         signature = _STD_.chains.tezos.signer.sign(packedPrice)
         break
       default:
@@ -78,8 +78,8 @@ function signPriceForProtocol(
     }
 
     return {
-      data,
-      packedPrice,
+      priceData,
+      packed: packedPrice,
       signature,
     }
   } catch (error: any) {
