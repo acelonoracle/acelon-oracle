@@ -5,6 +5,7 @@
 
 .env
 .acurast
+combineSrcFiles.py
 combined_src_files.txt
 
 # User-specific files
