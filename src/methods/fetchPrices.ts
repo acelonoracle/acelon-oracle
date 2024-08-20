@@ -39,6 +39,8 @@ export async function fetchPrices(
   const results = await Promise.all(
     params.pairs.map(async (pair) => {
       const clientPrices = Array.isArray(pair.price) ? pair.price : [pair.price]
+      let timestamp: number | undefined = undefined
+
       if (clientPrices.length !== aggregationTypes.length) {
         throw new Error(
           `Number of client prices (${clientPrices.length}) does not match number of aggregation types (${aggregationTypes.length})`
@@ -89,7 +91,7 @@ export async function fetchPrices(
           calculatedPrices[aggType] = calculatedPrice
 
           // Validate against client-provided price if available
-          if (pair.price !== undefined) {
+          if (pair.price !== undefined && pair.timestamp !== undefined) {
             const clientPrice = clientPrices[index]
 
             if (clientPrice !== undefined) {
@@ -100,10 +102,9 @@ export async function fetchPrices(
               )
               log(`Deviation for ${aggType}: ${deviation}%`)
 
-              const isValid = deviation <= maxValidationDiffPercent
-              validations[aggType] = isValid
-
-              if (isValid) {
+              const isPriceInRange = deviation <= maxValidationDiffPercent
+              validations[aggType] = isPriceInRange
+              if (isPriceInRange) {
                 calculatedPrices[aggType] = clientPrice
                 log(
                   `Using client-provided price for ${pair.from}-${pair.to} (${aggType})`
@@ -111,6 +112,17 @@ export async function fetchPrices(
               } else {
                 log(
                   `Client price deviation too high for ${pair.from}-${pair.to} (${aggType}), using oracle price`
+                )
+              }
+
+              // Check if the timestamp provided by the client is not older than 1 minute
+              const isTimestampValid =
+                Math.abs(pair.timestamp - Date.now()) <= 60 * 1000
+              if (isTimestampValid) {
+                timestamp = pair.timestamp
+              } else {
+                log(
+                  `Client timestamp too old (max 60s difference) for ${pair.from}-${pair.to} (${aggType}), using oracle timestamp`
                 )
               }
             }
@@ -121,7 +133,7 @@ export async function fetchPrices(
           from: pair.from,
           to: pair.to,
           price: calculatedPrices,
-          timestamp: Date.now(),
+          timestamp: timestamp || Date.now(),
           rawPrices: prices,
           stdDev: stdDev,
           sources,

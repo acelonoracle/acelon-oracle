@@ -50,12 +50,13 @@ export interface FetchPricesParams {
     from: string
     to: string
     price?: number | number[]
+    timestamp?: number
   }>
   protocol: Protocol
   exchanges?: string[]
   minSources?: number
   tradeAgeLimit?: number
-  aggregation: AggregationType | AggregationType[]
+  aggregation?: AggregationType | AggregationType[]
   maxSourcesDeviation?: number
   maxValidationDiff?: number
 }
@@ -66,7 +67,7 @@ export interface FetchPricesRequest extends JsonRpcRequestBase {
 }
 
 export interface SignedPrice {
-  data: {
+  priceData: {
     from: string
     to: string
     price: number | number[]
@@ -74,7 +75,7 @@ export interface SignedPrice {
     sources: Array<{ exchangeId: string; certificate: string }>
     requestHash: string
   }
-  packedPrice: string
+  packed: string
   signature: string
 }
 
