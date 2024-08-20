@@ -73,7 +73,7 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
           calculatedPrices[aggType] = calculatedPrice
 
           // Validate against client-provided price if available
-          if (clientPriceProvided) {
+          if (pair.price !== undefined && pair.timestamp !== undefined) {
             const clientPrice = clientPrices[index]
 
             if (clientPrice !== undefined) {
