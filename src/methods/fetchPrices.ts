@@ -1,26 +1,13 @@
-import { log } from 'console'
-import {
-  AGGREGATION_TYPE,
-  DEVIATION_THRESHOLD_PERCENT,
-  MINIMUM_SOURCES,
-  TRADE_AGE_LIMIT,
-} from '../constants'
-import { PriceInfo, FetchPricesParams, AggregationType } from '../types'
-import { fetchPrice } from '../utils/fetch'
-import {
-  aggregatePrice,
-  normalize,
-  relativePriceDifference,
-  standardDeviation,
-} from '../utils/math'
+import { log } from "console"
+import { AGGREGATION_TYPE, DEVIATION_THRESHOLD_PERCENT, MINIMUM_SOURCES, TRADE_AGE_LIMIT } from "../constants"
+import { PriceInfo, FetchPricesParams, AggregationType } from "../types"
+import { fetchPrice } from "../utils/fetch"
+import { aggregatePrice, normalize, relativePriceDifference, standardDeviation } from "../utils/math"
 
-export async function fetchPrices(
-  params: FetchPricesParams
-): Promise<PriceInfo[]> {
+export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[]> {
   log(`Starting fetchPrices with params: ${JSON.stringify(params)}`)
 
-  const maxValidationDiffPercent =
-    params.maxValidationDiff || DEVIATION_THRESHOLD_PERCENT
+  const maxValidationDiffPercent = params.maxValidationDiff || DEVIATION_THRESHOLD_PERCENT
   const tradeAgeLimit = params.tradeAgeLimit || TRADE_AGE_LIMIT
   const minSources = params.minSources || MINIMUM_SOURCES
   const maxSourcesDeviation = params.maxSourcesDeviation
@@ -33,27 +20,23 @@ export async function fetchPrices(
         : [params.aggregation]
 
   log(
-    `Using deviation threshold: ${maxValidationDiffPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, aggregation types: ${aggregationTypes.join(', ')}`
+    `Using deviation threshold: ${maxValidationDiffPercent}%, trade age limit: ${tradeAgeLimit}ms, minimum sources: ${minSources}, aggregation types: ${aggregationTypes.join(", ")}`
   )
 
   const results = await Promise.all(
     params.pairs.map(async (pair) => {
+      const clientPriceProvided = pair.price !== undefined && pair.timestamp !== undefined
       const clientPrices = Array.isArray(pair.price) ? pair.price : [pair.price]
       let timestamp: number | undefined = undefined
 
-      if (clientPrices.length !== aggregationTypes.length) {
+      if (clientPriceProvided && clientPrices.length !== aggregationTypes.length) {
         throw new Error(
           `Number of client prices (${clientPrices.length}) does not match number of aggregation types (${aggregationTypes.length})`
         )
       }
 
       try {
-        const priceData = await fetchPrice(
-          pair.from,
-          pair.to,
-          params.exchanges,
-          tradeAgeLimit
-        )
+        const priceData = await fetchPrice(pair.from, pair.to, params.exchanges, tradeAgeLimit)
         const prices = priceData.map((data) => data.price)
 
         if (prices.length === 0) {
@@ -83,41 +66,32 @@ export async function fetchPrices(
 
         // Calculate prices for all aggregation types
         const calculatedPrices: Partial<Record<AggregationType, number>> = {}
-        let validations: Partial<Record<AggregationType, boolean>> | undefined =
-          undefined
+        let validations: Partial<Record<AggregationType, boolean>> | undefined = undefined
 
         aggregationTypes.forEach((aggType, index) => {
           const calculatedPrice = normalize(aggregatePrice(prices, aggType))
           calculatedPrices[aggType] = calculatedPrice
 
           // Validate against client-provided price if available
-          if (pair.price !== undefined && pair.timestamp !== undefined) {
+          if (clientPriceProvided) {
             const clientPrice = clientPrices[index]
 
             if (clientPrice !== undefined) {
               if (!validations) validations = {}
-              const deviation = relativePriceDifference(
-                calculatedPrice,
-                clientPrice
-              )
+              const deviation = relativePriceDifference(calculatedPrice, clientPrice)
               log(`Deviation for ${aggType}: ${deviation}%`)
 
               const isPriceInRange = deviation <= maxValidationDiffPercent
               validations[aggType] = isPriceInRange
               if (isPriceInRange) {
                 calculatedPrices[aggType] = clientPrice
-                log(
-                  `Using client-provided price for ${pair.from}-${pair.to} (${aggType})`
-                )
+                log(`Using client-provided price for ${pair.from}-${pair.to} (${aggType})`)
               } else {
-                log(
-                  `Client price deviation too high for ${pair.from}-${pair.to} (${aggType}), using oracle price`
-                )
+                log(`Client price deviation too high for ${pair.from}-${pair.to} (${aggType}), using oracle price`)
               }
 
               // Check if the timestamp provided by the client is not older than 1 minute
-              const isTimestampValid =
-                Math.abs(pair.timestamp - Date.now()) <= 60 * 1000
+              const isTimestampValid = Math.abs(pair.timestamp - Date.now()) <= 60 * 1000
               if (isTimestampValid) {
                 timestamp = pair.timestamp
               } else {
@@ -144,15 +118,10 @@ export async function fetchPrices(
           priceInfo.validation = validations
         }
 
-        log(
-          `Final price info for ${pair.from}-${pair.to}: ${JSON.stringify(priceInfo)}`
-        )
+        log(`Final price info for ${pair.from}-${pair.to}: ${JSON.stringify(priceInfo)}`)
         return priceInfo
       } catch (error) {
-        log(
-          `❌ Error fetching price for ${pair.from}-${pair.to}: ${error}`,
-          'error'
-        )
+        log(`❌ Error fetching price for ${pair.from}-${pair.to}: ${error}`, "error")
         throw error // Re-throw the error to be caught by the Promise.all
       }
     })
