@@ -50,7 +50,7 @@ export function aggregatePrice(prices: number[], aggregationType: AggregationTyp
 }
 
 export function normalize(value: number): number {
-  return Math.round(value * PRICE_PRECISION)
+  return value * PRICE_PRECISION
 }
 
 export function standardDeviation(values: number[]): number {

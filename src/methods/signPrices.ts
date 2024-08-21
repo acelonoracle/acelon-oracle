@@ -1,18 +1,13 @@
-import { PriceInfo, SignedPrice, Protocol, FetchPricesParams } from '../types'
-import crypto from 'crypto'
-import { Struct, Vector, str, u32 } from 'scale-ts'
-import RLP from 'rlp'
+import { PriceInfo, SignedPrice, Protocol, FetchPricesParams } from "../types"
+import crypto from "crypto"
+import { Struct, Vector, str, u32 } from "scale-ts"
+import RLP from "rlp"
 
 declare const _STD_: any
 
-export async function signPrices(
-  priceInfos: PriceInfo[],
-  params: FetchPricesParams
-): Promise<SignedPrice[]> {
+export async function signPrices(priceInfos: PriceInfo[], params: FetchPricesParams): Promise<SignedPrice[]> {
   const requestHash = hashRequest(params)
-  return priceInfos.map((info) =>
-    signPriceForProtocol(info, params.protocol, requestHash)
-  )
+  return priceInfos.map((info) => signPriceForProtocol(info, params.protocol, requestHash))
 }
 
 //SCALE data structures
@@ -30,11 +25,7 @@ const PriceInfoCodec = Struct({
   requestHash: str,
 })
 
-function signPriceForProtocol(
-  priceInfo: PriceInfo,
-  protocol: Protocol,
-  requestHash: string
-): SignedPrice {
+function signPriceForProtocol(priceInfo: PriceInfo, protocol: Protocol, requestHash: string): SignedPrice {
   const priceData = {
     from: priceInfo.from,
     to: priceInfo.to,
@@ -49,14 +40,14 @@ function signPriceForProtocol(
 
   try {
     switch (protocol) {
-      case 'Substrate':
-      case 'WASM':
+      case "Substrate":
+      case "WASM":
         // Pack data into SCALE format using scale-ts
         const scaleEncoded = PriceInfoCodec.enc(priceData)
-        packedPrice = sha256(scaleEncoded)
-        signature = _STD_.signers.secp256k1.sign(packedPrice)
+        packedPrice = Buffer.from(scaleEncoded).toString("hex")
+        signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
         break
-      case 'EVM':
+      case "EVM":
         // Pack data into RLP format
         const rlpEncoded = RLP.encode([
           priceData.from,
@@ -66,10 +57,10 @@ function signPriceForProtocol(
           priceData.sources.map((s) => [s.exchangeId, s.certificate]),
           priceData.requestHash,
         ])
-        packedPrice = sha256(rlpEncoded)
-        signature = _STD_.signers.secp256k1.sign(packedPrice)
+        packedPrice = Buffer.from(rlpEncoded).toString("hex")
+        signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
         break
-      case 'Tezos':
+      case "Tezos":
         packedPrice = _STD_.chains.tezos.encoding.pack([priceData])
         signature = _STD_.chains.tezos.signer.sign(packedPrice)
         break
@@ -83,14 +74,12 @@ function signPriceForProtocol(
       signature,
     }
   } catch (error: any) {
-    throw new Error(
-      `Error signing price for ${priceInfo.from}-${priceInfo.to}: ${error.message}`
-    )
+    throw new Error(`Error signing price for ${priceInfo.from}-${priceInfo.to}: ${error.message}`)
   }
 }
 
 function sha256(data: Uint8Array | string): string {
-  return crypto.createHash('sha256').update(data).digest('hex')
+  return crypto.createHash("sha256").update(data).digest("hex")
 }
 
 function hashRequest(params: FetchPricesParams): string {
