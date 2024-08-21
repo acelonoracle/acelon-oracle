@@ -51,7 +51,7 @@ async function handleRequest(
             jsonrpc: '2.0',
             id: request.id,
             error: {
-              code: -32000,
+              code: -32001,
               message: 'fetchPrices error',
               data: error.message,
             },
@@ -71,7 +71,7 @@ async function handleRequest(
             jsonrpc: '2.0',
             id: request.id,
             error: {
-              code: -32000,
+              code: -32002,
               message: 'checkExchangeHealth error',
               data: error.message,
             },
