@@ -69,8 +69,9 @@ To fetch prices, send a JSON-RPC request with the following structure:
 
 - `pairs`: An array of currency pairs to fetch prices for. Each pair consists of:
 
-  - `from`: The base currency (e.g., "BTC")
-  - `to`: The quote currency (e.g., "USD")
+  - `from`: The from currency (e.g., "BTC")
+  - `to`: The to currency (e.g., "USD")
+  - `decimals`: (Optional) Decimals of the price (Default: 8)
   - `price` (optional): A client-provided price(s) for validation.
 
     The prices have to match the aggregation types that were requested. Provide prices that match requested aggregations in the same order.
@@ -134,6 +135,7 @@ The `fetchPrices` method returns a JSON-RPC response with the following structur
       {
         "from": "BTC",
         "to": "USD",
+        "decimals": 6,
         "price": {
           "median": 50000000000,
           "mean": 50010000000
@@ -153,6 +155,7 @@ The `fetchPrices` method returns a JSON-RPC response with the following structur
         "data": {
           "from": "BTC",
           "to": "USD",
+          "decimals": 6,
           "price": [50000000000, 50010000000],
           "timestamp": 1623456789,
           "sources": [
@@ -173,7 +176,10 @@ The `fetchPrices` method returns a JSON-RPC response with the following structur
 
 - `priceInfos`: An array of price information for each requested pair.
 
-  - `price`: An object containing the aggregated prices for each requested aggregation method, normalized to 6 decimal places.
+  - `from`: the from symbol.
+  - `to`: the to symbol.
+  - `decimals`: decimals for the price.
+  - `price`: An object containing the aggregated prices for each requested aggregation method.
   - `validation`: An object indicating whether each aggregated price passed the validation check against the client-provided price.
   - `timestamp`: The Unix timestamp of the price data in milliseconds.
   - `rawPrices`: An array of the prices from each source before aggregation.

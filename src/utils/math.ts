@@ -1,4 +1,3 @@
-import { PRICE_PRECISION } from "../constants"
 import { AggregationType } from "../types"
 
 export function median(values: number[]): number {
@@ -49,13 +48,13 @@ export function aggregatePrice(prices: number[], aggregationType: AggregationTyp
   }
 }
 
-export function normalize(value: number): number {
-  return Math.round(value * PRICE_PRECISION)
+export function normalize(value: number, decimals: number): number {
+  return Math.round(value * 10 ** decimals)
 }
 
 export function standardDeviation(values: number[]): number {
   const avg = mean(values)
-  const squareDiffs = values.map(value => Math.pow(value - avg, 2))
+  const squareDiffs = values.map((value) => Math.pow(value - avg, 2))
   const avgSquareDiff = mean(squareDiffs)
   return Math.sqrt(avgSquareDiff)
 }
