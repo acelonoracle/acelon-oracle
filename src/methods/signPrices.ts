@@ -1,4 +1,4 @@
-import { PriceInfo, SignedPrice, Protocol, FetchPricesParams } from "../types"
+import { PriceInfo, SignedPrice, Protocol, FetchPricesParams, PriceData } from "../types"
 import crypto from "crypto"
 import { Struct, Vector, str, u32 } from "scale-ts"
 import RLP from "rlp"
@@ -19,6 +19,7 @@ const SourceCodec = Struct({
 const PriceInfoCodec = Struct({
   from: str,
   to: str,
+  decimals: u32,
   price: Vector(u32),
   timestamp: u32,
   sources: Vector(SourceCodec),
@@ -26,9 +27,10 @@ const PriceInfoCodec = Struct({
 })
 
 function signPriceForProtocol(priceInfo: PriceInfo, protocol: Protocol, requestHash: string): SignedPrice {
-  const priceData = {
+  const priceData: PriceData = {
     from: priceInfo.from,
     to: priceInfo.to,
+    decimals: priceInfo.decimals,
     price: Object.values(priceInfo.price),
     timestamp: priceInfo.timestamp,
     sources: priceInfo.sources,
@@ -52,6 +54,7 @@ function signPriceForProtocol(priceInfo: PriceInfo, protocol: Protocol, requestH
         const rlpEncoded = RLP.encode([
           priceData.from,
           priceData.to,
+          priceData.decimals,
           priceData.price.map((p) => p.toString()),
           priceData.timestamp.toString(),
           priceData.sources.map((s) => [s.exchangeId, s.certificate]),

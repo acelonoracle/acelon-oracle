@@ -65,15 +65,18 @@ export interface FetchPricesRequest extends JsonRpcRequestBase {
   params: FetchPricesParams
 }
 
+export interface PriceData {
+  from: string
+  to: string
+  decimals: number
+  price: number[]
+  timestamp: number
+  sources: Array<{ exchangeId: string; certificate: string }>
+  requestHash: string
+}
+
 export interface SignedPrice {
-  priceData: {
-    from: string
-    to: string
-    price: number | number[]
-    timestamp: number
-    sources: Array<{ exchangeId: string; certificate: string }>
-    requestHash: string
-  }
+  priceData: PriceData
   packed: string
   signature: string
 }

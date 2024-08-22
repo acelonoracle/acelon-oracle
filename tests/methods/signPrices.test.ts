@@ -38,6 +38,7 @@ describe("signPrices", () => {
       priceData: {
         from: "BTC",
         to: "USD",
+        decimals: 8,
         price: [50000],
         timestamp: 1234567890,
         sources: [
