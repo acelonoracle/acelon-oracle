@@ -3,7 +3,7 @@ import {
   AGGREGATION_TYPE,
   DEVIATION_THRESHOLD_PERCENT,
   MINIMUM_SOURCES,
-  PRICE_PRECISION,
+  DEFAULT_DECIMALS,
   TRADE_AGE_LIMIT,
 } from "../constants"
 import { PriceInfo, FetchPricesParams, AggregationType } from "../types"
@@ -75,7 +75,7 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
         let validations: Partial<Record<AggregationType, boolean>> | undefined = undefined
 
         aggregationTypes.forEach((aggType, index) => {
-          const calculatedPrice = normalize(aggregatePrice(prices, aggType), pair.precision || PRICE_PRECISION)
+          const calculatedPrice = normalize(aggregatePrice(prices, aggType), pair.decimals || DEFAULT_DECIMALS)
           calculatedPrices[aggType] = calculatedPrice
 
           // Validate against client-provided price if available
@@ -112,6 +112,7 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
         const priceInfo: PriceInfo = {
           from: pair.from,
           to: pair.to,
+          decimals: pair.decimals || DEFAULT_DECIMALS,
           price: calculatedPrices,
           timestamp: timestamp || Date.now(),
           rawPrices: prices,

@@ -34,6 +34,7 @@ export type Protocol = "Substrate" | "EVM" | "WASM" | "Tezos"
 export interface PriceInfo {
   from: string
   to: string
+  decimals: number
   price: Partial<Record<AggregationType, number>>
   validation?: Partial<Record<AggregationType, boolean>>
   timestamp: number
@@ -46,7 +47,7 @@ export interface FetchPricesParams {
   pairs: Array<{
     from: string
     to: string
-    precision?: number
+    decimals?: number
     price?: number | number[]
     timestamp?: number
   }>

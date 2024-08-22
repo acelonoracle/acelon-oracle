@@ -1,4 +1,4 @@
-import { PRICE_PRECISION } from "../../src/constants"
+import { DEFAULT_DECIMALS } from "../../src/constants"
 import { fetchPrices } from "../../src/methods/fetchPrices"
 import { FetchPricesParams } from "../../src/types"
 import { fetchPrice } from "../../src/utils/fetch"
@@ -29,7 +29,7 @@ describe("fetchPrices", () => {
     expect(result[0]).toMatchObject({
       from: "BTC",
       to: "USD",
-      price: { median: 50500 * 10 ** PRICE_PRECISION },
+      price: { median: 50500 * 10 ** DEFAULT_DECIMALS },
       timestamp: expect.any(Number),
       sources: expect.arrayContaining([
         { exchangeId: "TEST1", certificate: "cert1" },
@@ -53,7 +53,7 @@ describe("fetchPrices", () => {
 
     const result = await fetchPrices(params)
 
-    expect(result[0].price.median).toBe(50500 * 10 ** PRICE_PRECISION)
+    expect(result[0].price.median).toBe(50500 * 10 ** DEFAULT_DECIMALS)
   })
 
   it("should throw an error if not enough sources", async () => {
