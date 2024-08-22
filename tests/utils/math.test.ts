@@ -72,7 +72,7 @@ describe("Math Utils", () => {
 
   describe("normalize", () => {
     it("should normalize the value correctly", () => {
-      expect(normalize(1.23456789)).toBe(1234567.89)
+      expect(normalize(1.23456789,6)).toBe(1234568)
     })
   })
 })
