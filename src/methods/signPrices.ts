@@ -55,8 +55,8 @@ function signPriceForProtocol(priceInfo: PriceInfo, protocol: Protocol, requestH
           priceData.from,
           priceData.to,
           priceData.decimals,
-          priceData.price.map((p) => p.toString()),
-          priceData.timestamp.toString(),
+          priceData.price,
+          priceData.timestamp,
           priceData.sources.map((s) => [s.exchangeId, s.certificate]),
           priceData.requestHash,
         ])
