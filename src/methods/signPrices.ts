@@ -1,3 +1,4 @@
+import { log } from '../utils/sentry'
 import {
   PriceInfo,
   SignedPrice,
@@ -37,7 +38,7 @@ const PriceInfoCodec = Struct({
   requestHash: Bytes(32),
 })
 
-export function signPriceForProtocol(
+function signPriceForProtocol(
   priceInfo: PriceInfo,
   protocol: Protocol,
   requestHash: string
@@ -66,9 +67,12 @@ export function signPriceForProtocol(
             ...s,
             certificate: Uint8Array.from(Buffer.from(s.certificate, 'hex')),
           })),
-          requestHash: Uint8Array.from(Buffer.from(priceData.requestHash, 'hex')),
+          requestHash: Uint8Array.from(
+            Buffer.from(priceData.requestHash, 'hex')
+          ),
         })
         packedPrice = Buffer.from(scaleEncoded).toString('hex')
+        // log(`packedPrice ${packedPrice} sha ${sha256(packedPrice)}`)
         signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
         break
       case 'EVM':
@@ -81,26 +85,22 @@ export function signPriceForProtocol(
           number,
           readonly number[],
           number,
-          readonly { exchangeId: string; certificate: Hex }[],
-          Hex,
+          readonly [string, Hex][],
+          Hex
         ]
 
         // Define the ABI parameters
         const abiParameters = [
-          { name: 'from', type: 'string' },
-          { name: 'to', type: 'string' },
-          { name: 'decimals', type: 'uint32' },
-          { name: 'price', type: 'uint32[]' },
-          { name: 'timestamp', type: 'uint32' },
+          { type: 'string' },
+          { type: 'string' },
+          { type: 'uint32' },
+          { type: 'uint32[]' },
+          { type: 'uint32' },
           {
-            name: 'sources',
             type: 'tuple[]',
-            components: [
-              { name: 'exchangeId', type: 'string' },
-              { name: 'certificate', type: 'bytes32' },
-            ],
+            components: [{ type: 'string' }, { type: 'bytes' }],
           },
-          { name: 'requestHash', type: 'bytes32' },
+          { type: 'bytes' },
         ] as const
 
         // Encode the data
@@ -110,11 +110,12 @@ export function signPriceForProtocol(
           priceData.decimals,
           priceData.price,
           priceData.timestamp,
-          priceData.sources,
+          priceData.sources.map(s => [s.exchangeId, s.certificate]),
           priceData.requestHash,
         ] as EncodedPriceData)
 
         packedPrice = abiEncoded.slice(2) // Remove '0x' prefix
+        //log(`packedPrice ${packedPrice} sha ${sha256(packedPrice)}`)
         signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
         break
       case 'Tezos':
