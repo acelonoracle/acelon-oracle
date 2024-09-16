@@ -1,5 +1,5 @@
 // Base JSON-RPC types
-export type JsonRpcRequest = FetchPricesRequest | CheckExchangeHealthRequest | JsonRpcRequestBase
+export type JsonRpcRequest = FetchPricesRequest | CheckExchangeHealthRequest | PingRequest | JsonRpcRequestBase
 
 export interface JsonRpcRequestBase {
   jsonrpc: "2.0"
@@ -105,6 +105,11 @@ export interface ExchangeHealthStatus {
 
 export interface CheckExchangeHealthResult {
   healthStatuses: ExchangeHealthStatus[]
+}
+
+// Ping Types
+export interface PingRequest extends JsonRpcRequestBase {
+  method: "ping"
 }
 
 // Other types

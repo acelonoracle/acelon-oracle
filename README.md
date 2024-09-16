@@ -233,6 +233,31 @@ If there's an error during the price fetching process, the oracle will return an
 
 The error codes follow the JSON RPC 2.0 standard
 
+### Ping
+
+To ping the oracle, send a JSON-RPC request with the following structure:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "ping"
+}
+```
+
+The response will include a status and timestamp:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "status": "alive",
+    "timestamp": 1623456789000
+  }
+}
+```
+
 ## Development
 
 ### Project Structure

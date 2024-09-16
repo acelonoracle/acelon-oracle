@@ -13,6 +13,12 @@ async function handleRequest(
 ): Promise<JsonRpcResponse> {
   try {
     switch (request.method) {
+      case 'ping':
+        return {
+          jsonrpc: '2.0',
+          id: request.id,
+          result: { status: 'alive', timestamp: Date.now() },
+        }
       case 'fetchPrices':
         if (
           !request.params ||
