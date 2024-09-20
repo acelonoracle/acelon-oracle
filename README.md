@@ -1,8 +1,8 @@
-# Acurast Oracle Service
+# Acelon
 
 ## Overview
 
-Acurast Oracle is a decentralized price oracle service built on the Acurast network. It provides real-time cryptocurrency price data by aggregating information from multiple exchanges, ensuring high reliability and accuracy.
+Acelon is a decentralized price oracle service built on the Acurast network. It provides real-time cryptocurrency price data by aggregating information from multiple exchanges, ensuring high reliability and accuracy.
 
 ## Features
 
