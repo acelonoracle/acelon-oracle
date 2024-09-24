@@ -1,4 +1,4 @@
-import { log } from "console"
+import { log } from '../utils/sentry'
 import {
   AGGREGATION_TYPE,
   DEVIATION_THRESHOLD_PERCENT,

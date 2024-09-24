@@ -1,3 +1,4 @@
+import { log } from '../utils/sentry'
 import {
   PriceInfo,
   SignedPrice,
@@ -6,8 +7,8 @@ import {
   PriceData,
 } from '../types'
 import crypto from 'crypto'
-import { Struct, Vector, str, u32, u8 } from 'scale-ts'
-import RLP from 'rlp'
+import { Bytes, Struct, Vector, str, u32 } from 'scale-ts'
+import { encodeAbiParameters, Hex } from 'viem'
 
 declare const _STD_: any
 
@@ -24,7 +25,7 @@ export async function signPrices(
 //SCALE data structures
 const SourceCodec = Struct({
   exchangeId: str,
-  certificate: Vector(u8),
+  certificate: Bytes(32),
 })
 
 const PriceInfoCodec = Struct({
@@ -34,7 +35,7 @@ const PriceInfoCodec = Struct({
   price: Vector(u32),
   timestamp: u32,
   sources: Vector(SourceCodec),
-  requestHash: Vector(u8),
+  requestHash: Bytes(32),
 })
 
 function signPriceForProtocol(
@@ -64,29 +65,58 @@ function signPriceForProtocol(
           ...priceData,
           sources: priceData.sources.map((s) => ({
             ...s,
-            certificate: Array.from(Buffer.from(s.certificate, 'hex')),
+            certificate: Uint8Array.from(Buffer.from(s.certificate, 'hex')),
           })),
-          requestHash: Array.from(Buffer.from(priceData.requestHash, 'hex')),
+          requestHash: Uint8Array.from(
+            Buffer.from(priceData.requestHash, 'hex')
+          ),
         })
         packedPrice = Buffer.from(scaleEncoded).toString('hex')
-        signature = _STD_.signers.secp256k1.sign(sha256(scaleEncoded))
+        // log(`packedPrice ${packedPrice} sha ${sha256(packedPrice)}`)
+        signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
         break
       case 'EVM':
-        // Pack data into RLP format
-        const rlpEncoded = RLP.encode([
+        // Pack data into ABI format using viem
+
+        // Define the type for our encoded data
+        type EncodedPriceData = readonly [
+          string,
+          string,
+          number,
+          readonly number[],
+          number,
+          readonly [string, Hex][],
+          Hex
+        ]
+
+        // Define the ABI parameters
+        const abiParameters = [
+          { type: 'string' },
+          { type: 'string' },
+          { type: 'uint32' },
+          { type: 'uint32[]' },
+          { type: 'uint32' },
+          {
+            type: 'tuple[]',
+            components: [{ type: 'string' }, { type: 'bytes' }],
+          },
+          { type: 'bytes' },
+        ] as const
+
+        // Encode the data
+        const abiEncoded = encodeAbiParameters(abiParameters, [
           priceData.from,
           priceData.to,
           priceData.decimals,
           priceData.price,
           priceData.timestamp,
-          priceData.sources.map((s) => [
-            s.exchangeId,
-            Buffer.from(s.certificate, 'hex'), // pass hex values directly as buffer
-          ]),
-          Buffer.from(priceData.requestHash, 'hex'), // pass hex values directly as buffer
-        ])
-        packedPrice = Buffer.from(rlpEncoded).toString('hex')
-        signature = _STD_.signers.secp256k1.sign(sha256(rlpEncoded))
+          priceData.sources.map(s => [s.exchangeId, s.certificate]),
+          priceData.requestHash,
+        ] as EncodedPriceData)
+
+        packedPrice = abiEncoded.slice(2) // Remove '0x' prefix
+        //log(`packedPrice ${packedPrice} sha ${sha256(packedPrice)}`)
+        signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
         break
       case 'Tezos':
         packedPrice = _STD_.chains.tezos.encoding.pack([priceData])
