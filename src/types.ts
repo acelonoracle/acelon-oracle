@@ -35,7 +35,7 @@ export interface PriceInfo {
   from: string
   to: string
   decimals: number
-  price: Partial<Record<AggregationType, number>>
+  price: Partial<Record<AggregationType, bigint>>
   validation?: Partial<Record<AggregationType, boolean>>
   timestamp: number
   rawPrices: number[]
@@ -69,7 +69,7 @@ export interface PriceData {
   from: string
   to: string
   decimals: number
-  price: number[]
+  price: bigint[]
   timestamp: number
   sources: Array<{ exchangeId: string; certificate: string }>
   requestHash: string

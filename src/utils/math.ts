@@ -1,4 +1,5 @@
-import { AggregationType } from "../types"
+import BigNumber from 'bignumber.js'
+import { AggregationType } from '../types'
 
 export function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
@@ -25,7 +26,10 @@ export function max(values: number[]): number {
   return Math.max(...values)
 }
 
-export function relativePriceDifference(basePrice: number, comparisonPrice: number): number {
+export function relativePriceDifference(
+  basePrice: number,
+  comparisonPrice: number
+): number {
   return Math.abs((comparisonPrice - basePrice) / basePrice) * 100
 }
 
@@ -33,23 +37,31 @@ export function percentDifference(a: number, b: number): number {
   return Math.abs((a - b) / ((a + b) / 2)) * 100
 }
 
-export function aggregatePrice(prices: number[], aggregationType: AggregationType): number {
+export function aggregatePrice(
+  prices: number[],
+  aggregationType: AggregationType
+): number {
   switch (aggregationType) {
-    case "median":
+    case 'median':
       return median(prices)
-    case "mean":
+    case 'mean':
       return mean(prices)
-    case "min":
+    case 'min':
       return min(prices)
-    case "max":
+    case 'max':
       return max(prices)
     default:
       return median(prices) // Default to median if an invalid type is provided
   }
 }
 
-export function normalize(value: number, decimals: number): number {
-  return Math.round(value * 10 ** decimals)
+export function normalize(value: number, decimals: number): bigint {
+  return BigInt(
+    new BigNumber(value)
+      .shiftedBy(decimals)
+      .integerValue(BigNumber.ROUND_HALF_DOWN)
+      .toFixed()
+  )
 }
 
 export function standardDeviation(values: number[]): number {

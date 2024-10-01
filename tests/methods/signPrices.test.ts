@@ -20,7 +20,7 @@ describe("signPrices", () => {
         from: "BTC",
         to: "USD",
         decimals: 8,
-        price: { mean: 50000 },
+        price: { mean: 50000n },
         timestamp: 1234567890,
         sources: [
           { exchangeId: "TEST1", certificate: "cert1" },
@@ -39,7 +39,7 @@ describe("signPrices", () => {
         from: "BTC",
         to: "USD",
         decimals: 8,
-        price: [50000],
+        price: [50000n],
         timestamp: 1234567890,
         sources: [
           {

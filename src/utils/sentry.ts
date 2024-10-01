@@ -1,3 +1,5 @@
+import { bigIntReplacer } from './util'
+
 declare const _STD_: any
 declare const httpPOST: any
 
@@ -21,15 +23,18 @@ function logSentryPost(message: string): void {
   if (_STD_ && _STD_.env['SENTRY_KEY']) {
     httpPOST(
       'https://sentry.papers.tech/api/207/store/',
-      JSON.stringify({
-        event_id: generateUUID(),
-        timestamp: new Date().toISOString(),
-        platform: 'javascript',
-        message: {
-          message: message,
+      JSON.stringify(
+        {
+          event_id: generateUUID(),
+          timestamp: new Date().toISOString(),
+          platform: 'javascript',
+          message: {
+            message: message,
+          },
+          tags: { processorAddress: _STD_.device.getAddress() },
         },
-        tags: { processorAddress: _STD_.device.getAddress() },
-      }),
+        bigIntReplacer
+      ),
       {
         'Content-Type': 'application/json',
         'user-agent':

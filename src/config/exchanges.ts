@@ -239,14 +239,11 @@ export const CONFIGS: ExchangeConfig[] = [
     type: 'crypto',
     extractPriceData: (data) => {
       const timestampFactor = 1
-      const timestampIndex = 3
-      const priceIndex = 1
-
-      let priceData: any[] = Object.values(data['result']['data'][0])
+      const trade = data.result.data[0]
 
       return {
-        timestamp: priceData[timestampIndex] * timestampFactor,
-        price: parseFloat(priceData[priceIndex]),
+        timestamp: trade.t * timestampFactor,
+        price: parseFloat(trade.p),
       }
     },
     constructURL: (from, to) => {

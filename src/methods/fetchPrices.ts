@@ -9,9 +9,10 @@ import {
 import { PriceInfo, FetchPricesParams, AggregationType } from "../types"
 import { fetchPrice } from "../utils/fetch"
 import { aggregatePrice, normalize, relativePriceDifference, standardDeviation } from "../utils/math"
+import { bigIntReplacer } from '../utils/util'
 
 export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[]> {
-  log(`Starting fetchPrices with params: ${JSON.stringify(params)}`)
+  log(`Starting fetchPrices with params: ${JSON.stringify(params, bigIntReplacer)}`)
 
   const maxValidationDiffPercent = params.maxValidationDiff || DEVIATION_THRESHOLD_PERCENT
   const tradeAgeLimit = params.tradeAgeLimit || TRADE_AGE_LIMIT
@@ -71,7 +72,7 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
         }))
 
         // Calculate prices for all aggregation types
-        const calculatedPrices: Partial<Record<AggregationType, number>> = {}
+        const calculatedPrices: Partial<Record<AggregationType, bigint>> = {}
         let validations: Partial<Record<AggregationType, boolean>> | undefined = undefined
 
         aggregationTypes.forEach((aggType, index) => {
@@ -84,13 +85,13 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
 
             if (clientPrice !== undefined) {
               if (!validations) validations = {}
-              const deviation = relativePriceDifference(calculatedPrice, clientPrice)
+              const deviation = relativePriceDifference(Number(calculatedPrice), clientPrice)
               log(`Deviation for ${aggType}: ${deviation}%`)
 
               const isPriceInRange = deviation <= maxValidationDiffPercent
               validations[aggType] = isPriceInRange
               if (isPriceInRange) {
-                calculatedPrices[aggType] = clientPrice
+                calculatedPrices[aggType] = BigInt(clientPrice)
                 log(`Using client-provided price for ${pair.from}-${pair.to} (${aggType})`)
               } else {
                 log(`Client price deviation too high for ${pair.from}-${pair.to} (${aggType}), using oracle price`)
@@ -125,7 +126,7 @@ export async function fetchPrices(params: FetchPricesParams): Promise<PriceInfo[
           priceInfo.validation = validations
         }
 
-        log(`Final price info for ${pair.from}-${pair.to}: ${JSON.stringify(priceInfo)}`)
+        log(`Final price info for ${pair.from}-${pair.to}: ${JSON.stringify(priceInfo, bigIntReplacer)}`)
         return priceInfo
       } catch (error) {
         log(`❌ Error fetching price for ${pair.from}-${pair.to}: ${error}`, "error")

@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "bignumber.js": "^9.1.2",
     "bufferutil": "^4.0.8",
     "rlp": "^3.0.0",
     "scale-ts": "^1.6.0",
