@@ -109,7 +109,12 @@ function signPriceForProtocol(
         signature = _STD_.chains.ethereum.signer.sign(packedPrice)
         break
       case 'Tezos':
-        packedPrice = _STD_.chains.tezos.encoding.pack([priceData])
+        packedPrice = _STD_.chains.tezos.encoding.pack([
+          {
+            ...priceData,
+            price: priceData.price.map((p) => String(p)),
+          },
+        ])
         signature = _STD_.chains.tezos.signer.sign(packedPrice)
         break
       case 'Youves':
