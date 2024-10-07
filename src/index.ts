@@ -41,13 +41,14 @@ async function handleRequest(
         }
 
         try {
-          const priceInfos = await fetchPrices(request.params)
+          const { priceInfos, priceErrors } = await fetchPrices(request.params)
           const signedPrices = await signPrices(priceInfos, request.params)
           return {
             jsonrpc: '2.0',
             id: request.id,
             result: {
               priceInfos,
+              priceErrors,
               signedPrices,
               version: '1.0.0',
             },

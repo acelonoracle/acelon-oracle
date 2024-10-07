@@ -47,6 +47,12 @@ export interface PriceInfo {
   sources: Array<{ exchangeId: string; certificate: string }>
 }
 
+export interface PriceError {
+  from: string
+  to: string
+  message: string
+}
+
 export interface FetchPricesParams {
   pairs: Array<{
     from: string

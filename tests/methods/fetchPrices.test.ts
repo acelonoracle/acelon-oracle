@@ -24,7 +24,8 @@ describe('fetchPrices', () => {
       minSources: 2,
     }
 
-    const result = await fetchPrices(params)
+    const { priceInfos, priceErrors } = await fetchPrices(params)
+    const result = priceInfos
 
     expect(result).toHaveLength(1)
     expect(result[0]).toMatchObject({
@@ -52,7 +53,8 @@ describe('fetchPrices', () => {
       minSources: 2,
     }
 
-    const result = await fetchPrices(params)
+    const { priceInfos, priceErrors } = await fetchPrices(params)
+    const result = priceInfos
 
     expect(result[0].price.median).toBe(normalize(50500, DEFAULT_DECIMALS))
   })
