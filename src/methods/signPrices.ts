@@ -62,8 +62,9 @@ function signPriceForProtocol(
           ),
         })
         packedPrice = Buffer.from(scaleEncoded).toString('hex')
-        // log(`packedPrice ${packedPrice} sha ${sha256(packedPrice)}`)
-        signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
+        
+        _STD_.chains.substrate.signer.setSigner("SECP256K1")
+        signature = _STD_.chains.substrate.signer.sign(packedPrice)
         break
       case 'EVM':
         // Pack data into ABI format using viem
@@ -95,8 +96,6 @@ function signPriceForProtocol(
         ] as const)
 
         packedPrice = abiEncoded.slice(2) // Remove '0x' prefix
-        //log(`packedPrice ${packedPrice} sha ${sha256(packedPrice)}`)
-        // signature = _STD_.signers.secp256k1.sign(sha256(packedPrice))
         signature = _STD_.chains.ethereum.signer.sign(packedPrice)
         break
       case 'Tezos':
