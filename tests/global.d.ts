@@ -18,6 +18,9 @@ export interface GlobalWithAcurastFunctions {
         }
       }
     }
+    job: {
+      getPublicKeys: jest.Mock
+    }
   }
   httpGET: jest.Mock
 }
