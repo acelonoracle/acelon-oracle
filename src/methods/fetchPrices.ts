@@ -67,7 +67,7 @@ export async function fetchPrices(
         const priceData = await fetchPrice(
           pair.from,
           pair.to,
-          params.exchanges,
+          pair.exchanges,
           tradeAgeLimit
         )
         const prices = priceData.map((data) => data.price)

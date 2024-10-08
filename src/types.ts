@@ -58,11 +58,11 @@ export interface FetchPricesParams {
     from: string
     to: string
     decimals?: number
+    exchanges?: string[]
     price?: number | number[]
     timestamp?: number
   }>
   protocol: Protocol
-  exchanges?: string[]
   minSources?: number
   tradeAgeLimit?: number
   aggregation?: AggregationType | AggregationType[]
