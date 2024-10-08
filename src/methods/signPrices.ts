@@ -102,8 +102,10 @@ function signPriceForProtocol(
       case 'Tezos':
         packedPrice = _STD_.chains.tezos.encoding.pack([
           {
-            ...priceData,
-            price: priceData.price.map((p) => String(p)),
+            prices: priceData.price.map((p) => String(p)),
+            timestamp: priceData.timestamp,
+            certificates: priceData.sources.map((s) => s.certificate),
+            requestHash: priceData.requestHash,
           },
         ])
         signature = _STD_.chains.tezos.signer.sign(packedPrice)
