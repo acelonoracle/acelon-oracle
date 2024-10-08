@@ -21,18 +21,10 @@ export async function signPrices(
 }
 
 //SCALE data structures
-const SourceCodec = Struct({
-  exchangeId: str,
-  certificate: Bytes(32),
-})
-
-const PriceInfoCodec = Struct({
-  from: str,
-  to: str,
-  decimals: u8,
-  price: Vector(u128),
+const PricePayloadCodec = Struct({
+  prices: Vector(u128),
   timestamp: u64,
-  sources: Vector(SourceCodec),
+  certificates: Vector(Bytes(32)),
   requestHash: Bytes(32),
 })
 
@@ -59,13 +51,12 @@ function signPriceForProtocol(
       case 'Substrate':
       case 'WASM':
         // Pack data into SCALE format using scale-ts
-        const scaleEncoded = PriceInfoCodec.enc({
-          ...priceData,
+        const scaleEncoded = PricePayloadCodec.enc({
+          prices: priceData.price,
           timestamp: BigInt(priceData.timestamp),
-          sources: priceData.sources.map((s) => ({
-            ...s,
-            certificate: Uint8Array.from(Buffer.from(s.certificate, 'hex')),
-          })),
+          certificates: priceData.sources.map((s) =>
+            Uint8Array.from(Buffer.from(s.certificate, 'hex'))
+          ),
           requestHash: Uint8Array.from(
             Buffer.from(priceData.requestHash, 'hex')
           ),
