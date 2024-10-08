@@ -92,10 +92,13 @@ export async function fetchPrices(
 
         log(`Fetched ${prices.length} valid prices for ${pair.from}-${pair.to}`)
 
-        const sources = priceData.map((data) => ({
-          exchangeId: data.exchangeId,
-          certificate: data.certificate,
-        }))
+        // Sort sources by exchangeId to ensure consistent order
+        const sources = priceData
+          .map((data) => ({
+            exchangeId: data.exchangeId,
+            certificate: data.certificate,
+          }))
+          .sort((a, b) => a.exchangeId.localeCompare(b.exchangeId));
 
         // Calculate prices for all aggregation types
         const calculatedPrices: Partial<Record<AggregationType, bigint>> = {}
