@@ -2,7 +2,13 @@ import { WSS_URLS } from './constants'
 import { checkExchangeHealth } from './methods/checkExchangeHealth'
 import { fetchPrices } from './methods/fetchPrices'
 import { signPrices } from './methods/signPrices'
-import { JsonRpcRequest, JsonRpcResponse, WebSocketPayload } from './types'
+import {
+  CheckExchangeHealthResult,
+  FetchPricesResult,
+  JsonRpcRequest,
+  JsonRpcResponse,
+  WebSocketPayload,
+} from './types'
 import { log } from './utils/sentry'
 import { bigIntReplacer } from './utils/util'
 
@@ -43,15 +49,18 @@ async function handleRequest(
         try {
           const { priceInfos, priceErrors } = await fetchPrices(request.params)
           const signedPrices = await signPrices(priceInfos, request.params)
+
+          const result: FetchPricesResult = {
+            priceInfos,
+            priceErrors,
+            signedPrices,
+            version: '1.0.0',
+          }
+
           return {
             jsonrpc: '2.0',
             id: request.id,
-            result: {
-              priceInfos,
-              priceErrors,
-              signedPrices,
-              version: '1.0.0',
-            },
+            result,
           }
         } catch (error: any) {
           log(`❌ Error in fetchPrices: ${error.message}`, 'error')
@@ -68,10 +77,11 @@ async function handleRequest(
       case 'checkExchangeHealth':
         try {
           const healthStatuses = await checkExchangeHealth(request.params)
+          const result: CheckExchangeHealthResult = { healthStatuses }
           return {
             jsonrpc: '2.0',
             id: request.id,
-            result: { healthStatuses },
+            result,
           }
         } catch (error: any) {
           log(`❌ Error in checkExchangeHealth: ${error.message}`, 'error')

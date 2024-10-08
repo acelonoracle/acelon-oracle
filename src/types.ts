@@ -94,6 +94,7 @@ export interface SignedPrice {
 
 export interface FetchPricesResult {
   priceInfos: PriceInfo[]
+  priceErrors: PriceError[]
   signedPrices: SignedPrice[]
   version: string
 }
