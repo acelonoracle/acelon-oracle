@@ -89,6 +89,7 @@ export interface SignedPrice {
   priceData: PriceData
   packed: string
   signature: string
+  pubKey: string
 }
 
 export interface FetchPricesResult {

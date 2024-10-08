@@ -45,6 +45,9 @@ function signPriceForProtocol(
 
   let packedPrice: string
   let signature: string
+  let pubKey: string
+
+  const pubKeys = _STD_.job.getPublicKeys()
 
   try {
     switch (protocol) {
@@ -62,9 +65,11 @@ function signPriceForProtocol(
           ),
         })
         packedPrice = Buffer.from(scaleEncoded).toString('hex')
-        
-        _STD_.chains.substrate.signer.setSigner("SECP256K1")
+
+        _STD_.chains.substrate.signer.setSigner('SECP256K1')
         signature = _STD_.chains.substrate.signer.sign(packedPrice)
+
+        pubKey = pubKeys['secp256k1']
         break
       case 'EVM':
         // Pack data into ABI format using viem
@@ -97,6 +102,8 @@ function signPriceForProtocol(
 
         packedPrice = abiEncoded.slice(2) // Remove '0x' prefix
         signature = _STD_.chains.ethereum.signer.sign(packedPrice)
+
+        pubKey = pubKeys['secp256k1']
         break
       case 'Tezos':
         packedPrice = _STD_.chains.tezos.encoding.pack([
@@ -108,6 +115,8 @@ function signPriceForProtocol(
           },
         ])
         signature = _STD_.chains.tezos.signer.sign(packedPrice)
+
+        pubKey = pubKeys['p256']
         break
       case 'Youves':
         packedPrice = _STD_.chains.tezos.encoding.pack([
@@ -118,6 +127,8 @@ function signPriceForProtocol(
           },
         ])
         signature = _STD_.chains.tezos.signer.sign(packedPrice)
+
+        pubKey = pubKeys['p256']
         break
       default:
         throw new Error(`Unsupported protocol: ${protocol}`)
@@ -127,6 +138,7 @@ function signPriceForProtocol(
       priceData,
       packed: packedPrice,
       signature,
+      pubKey,
     }
   } catch (error: any) {
     throw new Error(
