@@ -53,6 +53,8 @@ function signPriceForProtocol(
     switch (protocol) {
       case 'Substrate':
       case 'WASM':
+      case 'Ink!':
+      case 'Gear':
         // Pack data into SCALE format using scale-ts
         const scaleEncoded = PricePayloadCodec.enc({
           prices: priceData.price,

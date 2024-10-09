@@ -33,7 +33,14 @@ export type JsonRpcResponse = JsonRpcSuccessResponse | JsonRpcErrorResponse
 // FetchPrices Types
 export type AggregationType = 'median' | 'mean' | 'min' | 'max'
 
-export type Protocol = 'Substrate' | 'EVM' | 'WASM' | 'Tezos' | 'Youves'
+export type Protocol =
+  | 'Substrate'
+  | 'EVM'
+  | 'WASM'
+  | 'Ink!'
+  | 'Gear'
+  | 'Tezos'
+  | 'Youves'
 
 export interface PriceInfo {
   from: string
