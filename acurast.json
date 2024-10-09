@@ -36,7 +36,7 @@
       },
       "execution": {
         "type": "onetime",
-        "maxExecutionTimeInMs": 3600000
+        "maxExecutionTimeInMs": 7200000
       },
       "maxAllowedStartDelayInMs": 10000,
       "usageLimit": {
@@ -44,10 +44,10 @@
         "maxNetworkRequests": 0,
         "maxStorage": 0
       },
-      "numberOfReplicas": 5,
+      "numberOfReplicas": 10,
       "requiredModules": [],
-      "minProcessorReputation": 500000,
-      "maxCostPerExecution": 200000000000,
+      "minProcessorReputation": 0,
+      "maxCostPerExecution": 300000000000,
       "includeEnvironmentVariables": [],
       "processorWhitelist": []
     }
