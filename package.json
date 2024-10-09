@@ -1,6 +1,6 @@
 {
-  "name": "acurast-oracle-service",
-  "version": "0.0.1",
+  "name": "acelon-oracle",
+  "version": "1.0.0",
   "author": "Lorenzo Spoleti <l.spoelti@papers.ch>",
   "main": "dist/bundle.js",
   "scripts": {
