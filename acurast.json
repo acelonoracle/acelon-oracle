@@ -1,6 +1,32 @@
 {
   "projects": {
-    "oracle": {
+    "prod": {
+      "projectName": "oracle",
+      "fileUrl": "dist/bundle.js",
+      "network": "canary",
+      "onlyAttestedDevices": true,
+      "assignmentStrategy": {
+        "type": "Single"
+      },
+      "execution": {
+        "type": "interval",
+        "intervalInMs": 3600000,
+        "numberOfExecutions": 240
+      },
+      "maxAllowedStartDelayInMs": 10000,
+      "usageLimit": {
+        "maxMemory": 0,
+        "maxNetworkRequests": 0,
+        "maxStorage": 0
+      },
+      "numberOfReplicas": 10,
+      "requiredModules": [],
+      "minProcessorReputation": 500000,
+      "maxCostPerExecution": 20000000000,
+      "includeEnvironmentVariables": [],
+      "processorWhitelist": []
+    },
+    "test": {
       "projectName": "oracle",
       "fileUrl": "dist/bundle.js",
       "network": "canary",
@@ -10,7 +36,7 @@
       },
       "execution": {
         "type": "onetime",
-        "maxExecutionTimeInMs": 3600000
+        "maxExecutionTimeInMs": 7200000
       },
       "maxAllowedStartDelayInMs": 10000,
       "usageLimit": {
@@ -21,7 +47,7 @@
       "numberOfReplicas": 10,
       "requiredModules": [],
       "minProcessorReputation": 0,
-      "maxCostPerExecution": 10000000000,
+      "maxCostPerExecution": 300000000000,
       "includeEnvironmentVariables": [],
       "processorWhitelist": []
     }

@@ -1,21 +1,25 @@
 // Base JSON-RPC types
-export type JsonRpcRequest = FetchPricesRequest | CheckExchangeHealthRequest | PingRequest | JsonRpcRequestBase
+export type JsonRpcRequest =
+  | FetchPricesRequest
+  | CheckExchangeHealthRequest
+  | PingRequest
+  | JsonRpcRequestBase
 
 export interface JsonRpcRequestBase {
-  jsonrpc: "2.0"
+  jsonrpc: '2.0'
   id: string | number
   method: string
   params?: any
 }
 
 export interface JsonRpcSuccessResponse {
-  jsonrpc: "2.0"
+  jsonrpc: '2.0'
   id: string | number
   result: any
 }
 
 export interface JsonRpcErrorResponse {
-  jsonrpc: "2.0"
+  jsonrpc: '2.0'
   id: string | number | null
   error: {
     code: number
@@ -27,15 +31,22 @@ export interface JsonRpcErrorResponse {
 export type JsonRpcResponse = JsonRpcSuccessResponse | JsonRpcErrorResponse
 
 // FetchPrices Types
-export type AggregationType = "median" | "mean" | "min" | "max"
+export type AggregationType = 'median' | 'mean' | 'min' | 'max'
 
-export type Protocol = "Substrate" | "EVM" | "WASM" | "Tezos"
+export type Protocol =
+  | 'Substrate'
+  | 'EVM'
+  | 'WASM'
+  | 'Ink!'
+  | 'Gear'
+  | 'Tezos'
+  | 'Youves'
 
 export interface PriceInfo {
   from: string
   to: string
   decimals: number
-  price: Partial<Record<AggregationType, number>>
+  price: Partial<Record<AggregationType, bigint>>
   validation?: Partial<Record<AggregationType, boolean>>
   timestamp: number
   rawPrices: number[]
@@ -43,16 +54,22 @@ export interface PriceInfo {
   sources: Array<{ exchangeId: string; certificate: string }>
 }
 
+export interface PriceError {
+  from: string
+  to: string
+  message: string
+}
+
 export interface FetchPricesParams {
   pairs: Array<{
     from: string
     to: string
     decimals?: number
+    exchanges?: string[]
     price?: number | number[]
     timestamp?: number
   }>
   protocol: Protocol
-  exchanges?: string[]
   minSources?: number
   tradeAgeLimit?: number
   aggregation?: AggregationType | AggregationType[]
@@ -61,7 +78,7 @@ export interface FetchPricesParams {
 }
 
 export interface FetchPricesRequest extends JsonRpcRequestBase {
-  method: "fetchPrices"
+  method: 'fetchPrices'
   params: FetchPricesParams
 }
 
@@ -69,7 +86,7 @@ export interface PriceData {
   from: string
   to: string
   decimals: number
-  price: number[]
+  price: bigint[]
   timestamp: number
   sources: Array<{ exchangeId: string; certificate: string }>
   requestHash: string
@@ -79,10 +96,12 @@ export interface SignedPrice {
   priceData: PriceData
   packed: string
   signature: string
+  pubKey: string
 }
 
 export interface FetchPricesResult {
   priceInfos: PriceInfo[]
+  priceErrors: PriceError[]
   signedPrices: SignedPrice[]
   version: string
 }
@@ -93,13 +112,13 @@ export interface CheckExchangeHealthParams {
 }
 
 export interface CheckExchangeHealthRequest extends JsonRpcRequestBase {
-  method: "checkExchangeHealth"
+  method: 'checkExchangeHealth'
   params?: CheckExchangeHealthParams
 }
 
 export interface ExchangeHealthStatus {
   exchangeId: string
-  status: "up" | "down"
+  status: 'up' | 'down'
   responseTime?: number
 }
 
@@ -109,7 +128,7 @@ export interface CheckExchangeHealthResult {
 
 // Ping Types
 export interface PingRequest extends JsonRpcRequestBase {
-  method: "ping"
+  method: 'ping'
 }
 
 // Other types
@@ -122,7 +141,7 @@ export interface WebSocketPayload {
 export interface ExchangeConfig {
   name: string
   exchange_id: string
-  type: "crypto"
+  type: 'crypto'
   extractPriceData: (data: any) => { timestamp: number; price: number }
   constructURL: (from: string, to: string) => string
   healthEndpoint: string

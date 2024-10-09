@@ -24,6 +24,9 @@ global._STD_ = {
       },
     },
   },
+  job: {
+    getPublicKeys: jest.fn(),
+  },
 }
 
 global.httpGET = jest.fn()

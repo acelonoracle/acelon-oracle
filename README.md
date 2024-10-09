@@ -56,7 +56,6 @@ To fetch prices, send a JSON-RPC request with the following structure:
       { "from": "ETH", "to": "USD" }
     ],
     "protocol": "Substrate",
-    "exchanges": ["BNC", "CBP", "BFX"],
     "aggregation": ["median", "mean"],
     "minSources": 3,
     "tradeAgeLimit": 300000,
@@ -72,7 +71,9 @@ To fetch prices, send a JSON-RPC request with the following structure:
   - `from`: The from currency (e.g., "BTC")
   - `to`: The to currency (e.g., "USD")
   - `decimals`: (Optional) Decimals of the price (Default: 8)
+  - `exchanges` (optional): An array of exchange IDs to fetch prices from. If not provided, all available exchanges will be used.
   - `price` (optional): A client-provided price(s) for validation.
+  - `timestamp` (optional): A client-provided timestamp for validation.
 
     The prices have to match the aggregation types that were requested. Provide prices that match requested aggregations in the same order.
 
@@ -82,8 +83,6 @@ To fetch prices, send a JSON-RPC request with the following structure:
   - `"EVM"`
   - `"WASM"`
   - `"Tezos"`
-
-- `exchanges` (optional): An array of exchange IDs to fetch prices from. If not provided, all available exchanges will be used.
 
 - `aggregation`: The method(s) used to aggregate prices from multiple sources. Can be a single value or an array. Possible values are:
 

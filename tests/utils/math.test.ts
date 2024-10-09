@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js"
 import {
   median,
   mean,
@@ -72,7 +73,13 @@ describe("Math Utils", () => {
 
   describe("normalize", () => {
     it("should normalize the value correctly", () => {
-      expect(normalize(1.23456789,6)).toBe(1234568)
+      expect(normalize(1.23456789,6)).toBe(1234568n)
+    })
+  })
+
+  describe("handles large number correctly", () => {
+    it("should normalize the value correctly", () => {
+      expect(normalize(164300.12, 18)).toBe(164300120000000000000000n)
     })
   })
 })
