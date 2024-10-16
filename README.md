@@ -284,6 +284,10 @@ To test the project, run:
 yarn test
 ```
 
+### Sentry
+
+To enable Sentry, set the `SENTRY_DSN` environment variable to the DSN provided by Sentry.
+
 ## License
 
 This project is licensed under the MIT License.

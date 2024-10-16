@@ -1,4 +1,5 @@
 import { bigIntReplacer } from './util'
+import * as Sentry from "@sentry/node";
 
 declare const _STD_: any
 declare const httpPOST: any
@@ -59,11 +60,9 @@ export function log(
       break
     case 'error':
       console.error(message)
+      Sentry.captureException(message)
       break
     default:
       console.log(message)
   }
-
-  logSentryProcessor(message)
-  logSentryPost(message)
 }

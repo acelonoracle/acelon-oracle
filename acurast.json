@@ -20,10 +20,10 @@
         "maxStorage": 0
       },
       "numberOfReplicas": 10,
-      "requiredModules": [],
+      "requiredModules": ["DataEncryption"],
       "minProcessorReputation": 500000,
       "maxCostPerExecution": 20000000000,
-      "includeEnvironmentVariables": [],
+      "includeEnvironmentVariables": ["SENTRY_DSN"],
       "processorWhitelist": []
     },
     "test": {
@@ -45,10 +45,10 @@
         "maxStorage": 0
       },
       "numberOfReplicas": 10,
-      "requiredModules": [],
-      "minProcessorReputation": 0,
+      "requiredModules": ["DataEncryption"],
+      "minProcessorReputation": 500000,
       "maxCostPerExecution": 300000000000,
-      "includeEnvironmentVariables": [],
+      "includeEnvironmentVariables": ["SENTRY_DSN"],
       "processorWhitelist": []
     }
   }

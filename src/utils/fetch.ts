@@ -88,21 +88,25 @@ async function fetch(
   to: string,
   tradeAgeLimit?: number
 ): Promise<{ price: number; exchangeId: string; certificate: string }> {
-  return new Promise((resolve, reject) => {
-    log(`🌍 Fetching price from ${config.name} for ${from}-${to}`)
+  log(`🌍 Fetching price from ${config.name} for ${from}-${to}`)
 
-    // Check cache first
-    const cachedEntry = cache.get(from, to, config.exchange_id)
-    if (cachedEntry) {
-      resolve({
-        price: cachedEntry.price,
-        exchangeId: config.exchange_id,
-        certificate: cachedEntry.sources[0].certificate,
-      })
-      return
+  // Check cache first
+  const cachedEntry = cache.get(from, to, config.exchange_id)
+  if (cachedEntry) {
+    return {
+      price: cachedEntry.price,
+      exchangeId: config.exchange_id,
+      certificate: cachedEntry.sources[0].certificate,
     }
+  }
 
-    // Fetch from API if not in cache
+  // Create a promise that rejects after 10 seconds
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(`⌛ Timeout after 10 seconds for ${config.name}`)), 10000)
+  })
+
+  // Create a promise for the httpGET call
+  const httpGetPromise = new Promise<{ price: number; exchangeId: string; certificate: string }>((resolve, reject) => {
     httpGET(
       config.constructURL(from, to),
       {
@@ -159,4 +163,12 @@ async function fetch(
       }
     )
   })
+
+  // Race the httpGET promise against the timeout promise
+  try {
+    return await Promise.race([httpGetPromise, timeoutPromise])
+  } catch (error) {
+    log(`❌ Error fetching from ${config.name}: ${error}`, 'error')
+    throw error
+  }
 }
