@@ -1,5 +1,5 @@
 import { bigIntReplacer } from './util'
-import * as Sentry from "@sentry/node";
+import * as Sentry from '@sentry/node'
 
 declare const _STD_: any
 declare const httpPOST: any
@@ -21,9 +21,9 @@ function logSentryProcessor(message: string): void {
 
 //this log sentry function works on any processor that provides a SENTRY_KEY in the ENV variables
 function logSentryPost(message: string): void {
-  if (_STD_ && _STD_.env['SENTRY_KEY']) {
+  if (_STD_ && _STD_.env['SENTRY_KEY'] && _STD_.env['SENTRY_POST_URL']) {
     httpPOST(
-      'https://sentry.papers.tech/api/207/store/',
+      _STD_.env['SENTRY_POST_URL'],
       JSON.stringify(
         {
           event_id: generateUUID(),
@@ -61,6 +61,7 @@ export function log(
     case 'error':
       console.error(message)
       Sentry.captureException(message)
+      logSentryPost(message)
       break
     default:
       console.log(message)
