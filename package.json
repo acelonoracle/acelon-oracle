@@ -12,7 +12,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@sentry/node": "^8.34.0",
     "bignumber.js": "^9.1.2",
     "bufferutil": "^4.0.8",
     "rlp": "^3.0.0",

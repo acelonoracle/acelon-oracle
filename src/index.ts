@@ -11,29 +11,8 @@ import {
 } from './types'
 import { log } from './utils/sentry'
 import { bigIntReplacer } from './utils/util'
-import * as Sentry from '@sentry/node'
 
 declare const _STD_: any
-
-async function initializeSentry() {
-  if (_STD_ && _STD_.env['SENTRY_DSN']) {
-    // Initialize Sentry
-    try {
-      Sentry.init({
-        dsn: _STD_.env['SENTRY_DSN'],
-        // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-        // We recommend adjusting this value in production.
-        tracesSampleRate: 1.0,
-      })
-
-      log('✅ Sentry initialized successfully!')
-    } catch (error: any) {
-      log(`❌ Error initializing Sentry: ${error.message}`, 'error')
-    }
-  } else {
-    log('🟡 Sentry not initialized: SENTRY_DSN not set', 'warn')
-  }
-}
 
 // Handle incoming JSON-RPC requests and call methods accordingly
 async function handleRequest(
@@ -143,8 +122,6 @@ async function handleRequest(
 
 async function main() {
   log('🌱 Oracle script execution started')
-
-  await initializeSentry()
 
   _STD_.ws.open(
     WSS_URLS,
