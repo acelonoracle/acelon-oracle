@@ -286,8 +286,6 @@ yarn test
 
 ### Sentry
 
-To enable Sentry, set the `SENTRY_DSN` environment variable to the DSN provided by Sentry.
-
 To use the Sentry POST method set:
 `SENTRY_POST_URL`
 `SENTRY_KEY` (for authentication)
