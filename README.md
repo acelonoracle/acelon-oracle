@@ -290,6 +290,8 @@ To use the Sentry POST method set:
 `SENTRY_POST_URL`
 `SENTRY_KEY` (for authentication)
 
+`DEBUG` set to 'true' to have more logs sent to Sentry
+
 ## License
 
 This project is licensed under the MIT License.

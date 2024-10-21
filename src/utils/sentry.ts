@@ -51,7 +51,8 @@ function logSentryPost(message: string): void {
 
 export function log(
   message: string,
-  type: 'default' | 'warn' | 'error' = 'default'
+  type: 'default' | 'warn' | 'error' = 'default',
+  onlyDebug: boolean = false
 ): void {
   switch (type) {
     case 'warn':
@@ -59,7 +60,9 @@ export function log(
       break
     case 'error':
       console.error(message)
-      logSentryPost(message)
+      if (!onlyDebug || (_STD_ && _STD_.env['DEBUG'])) {
+        logSentryPost(message)
+      }
       break
     default:
       console.log(message)

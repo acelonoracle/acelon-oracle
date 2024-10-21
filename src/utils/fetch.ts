@@ -102,11 +102,18 @@ async function fetch(
 
   // Create a promise that rejects after 10 seconds
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error(`⌛ Timeout after 10 seconds for ${config.name}`)), 10000)
+    setTimeout(
+      () => reject(new Error(`⌛ Timeout after 10 seconds for ${config.name}`)),
+      10000
+    )
   })
 
   // Create a promise for the httpGET call
-  const httpGetPromise = new Promise<{ price: number; exchangeId: string; certificate: string }>((resolve, reject) => {
+  const httpGetPromise = new Promise<{
+    price: number
+    exchangeId: string
+    certificate: string
+  }>((resolve, reject) => {
     httpGET(
       config.constructURL(from, to),
       {
@@ -158,7 +165,11 @@ async function fetch(
         }
       },
       (errorMessage: string) => {
-        log(`❌ HTTP GET error for ${config.name}: ${errorMessage}`, 'error')
+        log(
+          `❌ HTTP GET error for ${config.name}: ${errorMessage}`,
+          'error',
+          true
+        )
         reject(new Error(`${config.name}: ${errorMessage}`))
       }
     )
@@ -168,7 +179,7 @@ async function fetch(
   try {
     return await Promise.race([httpGetPromise, timeoutPromise])
   } catch (error) {
-    log(`❌ Error fetching from ${config.name}: ${error}`, 'error')
+    log(`❌ Error fetching from ${config.name}: ${error}`, 'error', true)
     throw error
   }
 }

@@ -98,7 +98,7 @@ export async function fetchPrices(
             exchangeId: data.exchangeId,
             certificate: data.certificate,
           }))
-          .sort((a, b) => a.exchangeId.localeCompare(b.exchangeId));
+          .sort((a, b) => a.exchangeId.localeCompare(b.exchangeId))
 
         // Calculate prices for all aggregation types
         const calculatedPrices: Partial<Record<AggregationType, bigint>> = {}
@@ -174,7 +174,8 @@ export async function fetchPrices(
       } catch (error) {
         log(
           `❌ Error fetching price for ${pair.from}-${pair.to}: ${error}`,
-          'error'
+          'error',
+          true
         )
         return {
           success: false,
