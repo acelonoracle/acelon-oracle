@@ -5,51 +5,50 @@
       "fileUrl": "dist/bundle.js",
       "network": "canary",
       "onlyAttestedDevices": true,
-      "assignmentStrategy": {
-        "type": "Single"
-      },
+      "assignmentStrategy": { "type": "Single" },
       "execution": {
         "type": "interval",
         "intervalInMs": 3600000,
-        "numberOfExecutions": 240
+        "numberOfExecutions": 1894,
+        "maxExecutionTimeInMs": 3570000
       },
-      "maxAllowedStartDelayInMs": 10000,
-      "usageLimit": {
-        "maxMemory": 0,
-        "maxNetworkRequests": 0,
-        "maxStorage": 0
-      },
+      "maxAllowedStartDelayInMs": 30000,
+      "usageLimit": { "maxMemory": 0, "maxNetworkRequests": 0, "maxStorage": 0 },
       "numberOfReplicas": 10,
       "requiredModules": ["DataEncryption"],
       "minProcessorReputation": 500000,
-      "maxCostPerExecution": 20000000000,
-      "includeEnvironmentVariables": ["SENTRY_KEY", "SENTRY_POST_URL"],
-      "processorWhitelist": []
+      "maxCostPerExecution": 4007140000,
+      "includeEnvironmentVariables": [],
+      "processorWhitelist": [
+        "5GVKU6umDz2kYji6FAkkkhGaefFZe8dL8yQD79nhruT1KEcV",
+        "5HDbzncrXaLnGBa8uhzRMw3scbc2BYpmYoXxZ6UZYviEYEiJ",
+        "5EAePiwH2bqjwbDPD2ahWtoxZQKtzBpmaeSoaonbyNQkMho6",
+        "5Ce6eartjp8XzmG25nJPqUHVdFxMQZv9trqyWd3PjvPwTuSj",
+        "5H6FS9rUpKLB5kUfV1n2KDZyRZYCrA8fnmL5vCBzthUFAYBr",
+        "5FCogH52AjhpApzr57gHJ53P42FtwZZv3gEvKgdT4BbPpiXq",
+        "5EnAJejvmJQAdPjQhD2GaPh8nbAePhHXAhp15LkW78ZcVB2p",
+        "5G5W3vzW3MYne9xNviztYVXywxPLbWnzFxMsai5fBS3D8MfR",
+        "5DDokgV5eUq3mBRRF79MhuiCon8RZT7qo277c1ZoSTFjfeUZ",
+        "5GTQztDgriWX8Ciia1feGyKCD4kfMHutLHqMzhvW3YJ8gSiZ"
+      ],
+      "minProcessorVersions": { "android": "1.11.0" }
     },
     "test": {
       "projectName": "oracle",
       "fileUrl": "dist/bundle.js",
       "network": "canary",
       "onlyAttestedDevices": true,
-      "assignmentStrategy": {
-        "type": "Single"
-      },
-      "execution": {
-        "type": "onetime",
-        "maxExecutionTimeInMs": 14400000
-      },
-      "maxAllowedStartDelayInMs": 10000,
-      "usageLimit": {
-        "maxMemory": 0,
-        "maxNetworkRequests": 0,
-        "maxStorage": 0
-      },
+      "assignmentStrategy": { "type": "Single" },
+      "execution": { "type": "onetime", "maxExecutionTimeInMs": 14400000 },
+      "maxAllowedStartDelayInMs": 30000,
+      "usageLimit": { "maxMemory": 0, "maxNetworkRequests": 0, "maxStorage": 0 },
       "numberOfReplicas": 10,
       "requiredModules": ["DataEncryption"],
       "minProcessorReputation": 500000,
       "maxCostPerExecution": 300000000000,
       "includeEnvironmentVariables": ["SENTRY_KEY", "SENTRY_POST_URL"],
-      "processorWhitelist": []
+      "processorWhitelist": [],
+      "minProcessorVersions": { "android": "1.11.0" }
     }
   }
 }
