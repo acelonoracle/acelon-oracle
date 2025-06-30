@@ -25,10 +25,16 @@ export async function signPrices(
     // Have only selected pair in params, to create unique hashes for each pair
     const singlePairParams: FetchPricesParams = {
       ...params,
-      pairs: [pair],
+      pairs: [
+        {
+          from: pair.from,
+          to: pair.to,
+          decimals: pair.decimals,
+        },
+      ],
     }
     const requestHash = hashRequest(singlePairParams)
-    
+
     return signPriceForProtocol(info, params.protocol, requestHash)
   })
 }
