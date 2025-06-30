@@ -15,21 +15,14 @@ export async function signPrices(
   params: FetchPricesParams
 ): Promise<SignedPrice[]> {
   return priceInfos.map((info) => {
-    const pair = params.pairs.find(
-      (pair) => pair.from === info.from && pair.to === info.to
-    )
-    if (!pair) {
-      throw new Error(`No pair found in params : ${info.from}-${info.to}`)
-    }
-
     // Have only selected pair in params, to create unique hashes for each pair
     const singlePairParams: FetchPricesParams = {
       ...params,
       pairs: [
         {
-          from: pair.from,
-          to: pair.to,
-          decimals: pair.decimals,
+          from: info.from,
+          to: info.to,
+          decimals: info.decimals,
         },
       ],
     }
