@@ -16,6 +16,8 @@ const MEXC_TEMPLATE = `https://api.mexc.com/api/v3/trades?symbol=<<FROM>><<TO>>&
 const WHITEBIT_TEMPLATE = `https://whitebit.com/api/v4/public/trades/<<FROM>>_<<TO>>`
 const OKX_TEMPLATE = `https://www.okx.com/api/v5/market/trades?instId=<<FROM>>-<<TO>>&limit=1`
 const UPBIT_TEMPLATE = `https://api.upbit.com/v1/trades/ticks?market=<<TO>>-<<FROM>>&count=1`
+const BITGET_TEMPLATE = `https://api.bitget.com/api/v2/spot/market/candles?symbol=<<FROM>><<TO>>&granularity=1min&limit=1`
+const BITMART_TEMPLATE = `https://api-cloud.bitmart.com/spot/quotation/v3/ticker?symbol=<<FROM>>_<<TO>>`
 
 //API configs
 //the configs are used to fetch data from the exchanges
@@ -365,5 +367,46 @@ export const CONFIGS: ExchangeConfig[] = [
     },
     healthEndpoint: 'https://api.upbit.com/v1/market/all',
     validateHealthResponse: (response) => Array.isArray(JSON.parse(response)),
+  },
+  {
+    name: 'Bitget',
+    exchange_id: 'BTG',
+    type: 'crypto',
+    extractPriceData: (data) => {
+      const timestampFactor = 1
+      const timestampIndex = 0
+      const priceIndex = 4
+
+      let priceData: any[] = data.data[0]
+
+      return {
+        timestamp: parseInt(priceData[timestampIndex]) * timestampFactor,
+        price: parseFloat(priceData[priceIndex]),
+      }
+    },
+    constructURL: (from, to) => {
+      return BITGET_TEMPLATE.replace('<<FROM>>', from).replace('<<TO>>', to)
+    },
+    healthEndpoint: 'https://api.bitget.com/api/v2/public/time',
+    validateHealthResponse: (response) =>
+      JSON.parse(response).msg === 'success',
+  },
+  {
+    name: 'Bitmart',
+    exchange_id: 'BMART',
+    type: 'crypto',
+    extractPriceData: (data) => {
+      const timestampFactor = 1
+
+      return {
+        timestamp: parseInt(data.data.ts) * timestampFactor,
+        price: parseFloat(data.data.last),
+      }
+    },
+    constructURL: (from, to) => {
+      return BITMART_TEMPLATE.replace('<<FROM>>', from).replace('<<TO>>', to)
+    },
+    healthEndpoint: 'https://api-cloud.bitmart.com/system/time',
+    validateHealthResponse: (response) => JSON.parse(response).message === 'OK',
   },
 ]

@@ -14,10 +14,23 @@ export async function signPrices(
   priceInfos: PriceInfo[],
   params: FetchPricesParams
 ): Promise<SignedPrice[]> {
-  const requestHash = hashRequest(params)
-  return priceInfos.map((info) =>
-    signPriceForProtocol(info, params.protocol, requestHash)
-  )
+  return priceInfos.map((info) => {
+    const pair = params.pairs.find(
+      (pair) => pair.from === info.from && pair.to === info.to
+    )
+    if (!pair) {
+      throw new Error(`No pair found in params : ${info.from}-${info.to}`)
+    }
+
+    // Have only selected pair in params, to create unique hashes for each pair
+    const singlePairParams: FetchPricesParams = {
+      ...params,
+      pairs: [pair],
+    }
+    const requestHash = hashRequest(singlePairParams)
+    
+    return signPriceForProtocol(info, params.protocol, requestHash)
+  })
 }
 
 //SCALE data structures
@@ -157,10 +170,12 @@ export function hashRequest(params: FetchPricesParams): string {
   const stableJson = JSON.stringify(params, (key, value) => {
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       // Sort object keys recursively
-      return Object.keys(value).sort().reduce((result, key) => {
-        result[key] = value[key]
-        return result
-      }, {} as any)
+      return Object.keys(value)
+        .sort()
+        .reduce((result, key) => {
+          result[key] = value[key]
+          return result
+        }, {} as any)
     }
     return value
   })
