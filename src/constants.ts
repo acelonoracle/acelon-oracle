@@ -12,5 +12,5 @@ export const MINIMUM_SOURCES = 3
 export const DEFAULT_DECIMALS = 8
 export const DEVIATION_THRESHOLD_PERCENT = 0.05
 export const TRADE_AGE_LIMIT = 5 * 60 * 1000 // 5 min
-export const CACHE_DURATION = 60 * 1000 // 1 min
+export const CACHE_DURATION = _STD_.env["CACHE_DURATION"] || 30 * 1000 // 30 seconds
 export const AGGREGATION_TYPE: AggregationType = "median"
