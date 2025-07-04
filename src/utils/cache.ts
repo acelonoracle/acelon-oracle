@@ -1,4 +1,4 @@
-import { log } from 'console'
+import { log } from "./sentry"
 import { CACHE_DURATION } from '../constants'
 
 interface CacheEntry {

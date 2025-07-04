@@ -284,6 +284,26 @@ To test the project, run:
 yarn test
 ```
 
+## Environment Variables
+
+The following environment variables can be configured:
+
+### Caching
+
+- `CACHE_DURATION`: Duration in milliseconds for caching price data from exchanges. Default is 30000 (30 seconds).
+
+### Network Configuration
+
+- `WSS_URLS`: Comma-separated list of WebSocket URLs for Acurast network connectivity. Default is "wss://websocket-proxy-1.prod.gke.acurast.com,wss://websocket-proxy-2.prod.gke.acurast.com".
+
+### Sentry
+
+To use the Sentry POST method set:
+- `SENTRY_POST_URL`: URL for Sentry error reporting
+- `SENTRY_KEY`: Authentication key for Sentry (for authentication)
+
+- `DEBUG`: Set to 'true' to have more logs sent to Sentry
+
 ## License
 
 This project is licensed under the MIT License.

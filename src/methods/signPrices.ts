@@ -14,10 +14,22 @@ export async function signPrices(
   priceInfos: PriceInfo[],
   params: FetchPricesParams
 ): Promise<SignedPrice[]> {
-  const requestHash = hashRequest(params)
-  return priceInfos.map((info) =>
-    signPriceForProtocol(info, params.protocol, requestHash)
-  )
+  return priceInfos.map((info) => {
+    // Have only selected pair in params, to create unique hashes for each pair
+    const singlePairParams: FetchPricesParams = {
+      ...params,
+      pairs: [
+        {
+          from: info.from,
+          to: info.to,
+          decimals: info.decimals,
+        },
+      ],
+    }
+    const requestHash = hashRequest(singlePairParams)
+
+    return signPriceForProtocol(info, params.protocol, requestHash)
+  })
 }
 
 //SCALE data structures
@@ -153,7 +165,18 @@ function sha256(data: Uint8Array | string): string {
   return crypto.createHash('sha256').update(data).digest('hex')
 }
 
-function hashRequest(params: FetchPricesParams): string {
-  const stableJson = JSON.stringify(params, Object.keys(params).sort())
-  return sha256(JSON.stringify(stableJson))
+export function hashRequest(params: FetchPricesParams): string {
+  const stableJson = JSON.stringify(params, (key, value) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      // Sort object keys recursively
+      return Object.keys(value)
+        .sort()
+        .reduce((result, key) => {
+          result[key] = value[key]
+          return result
+        }, {} as any)
+    }
+    return value
+  })
+  return sha256(stableJson)
 }

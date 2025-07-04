@@ -23,4 +23,5 @@ export interface GlobalWithAcurastFunctions {
     }
   }
   httpGET: jest.Mock
+  httpPOST: jest.Mock
 }

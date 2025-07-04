@@ -20,9 +20,9 @@ function logSentryProcessor(message: string): void {
 
 //this log sentry function works on any processor that provides a SENTRY_KEY in the ENV variables
 function logSentryPost(message: string): void {
-  if (_STD_ && _STD_.env['SENTRY_KEY']) {
+  if (_STD_ && _STD_.env['SENTRY_KEY'] && _STD_.env['SENTRY_POST_URL']) {
     httpPOST(
-      'https://sentry.papers.tech/api/207/store/',
+      _STD_.env['SENTRY_POST_URL'],
       JSON.stringify(
         {
           event_id: generateUUID(),
@@ -51,7 +51,8 @@ function logSentryPost(message: string): void {
 
 export function log(
   message: string,
-  type: 'default' | 'warn' | 'error' = 'default'
+  type: 'default' | 'warn' | 'error' = 'default',
+  onlyDebug: boolean = false
 ): void {
   switch (type) {
     case 'warn':
@@ -59,11 +60,11 @@ export function log(
       break
     case 'error':
       console.error(message)
+      if (!onlyDebug || (_STD_ && _STD_.env['DEBUG'])) {
+        logSentryPost(message)
+      }
       break
     default:
       console.log(message)
   }
-
-  logSentryProcessor(message)
-  logSentryPost(message)
 }

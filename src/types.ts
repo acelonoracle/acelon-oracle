@@ -42,6 +42,8 @@ export type Protocol =
   | 'Tezos'
   | 'Youves'
 
+export type PriceType = 'cex' | 'dex'
+
 export interface PriceInfo {
   from: string
   to: string
@@ -146,4 +148,28 @@ export interface ExchangeConfig {
   constructURL: (from: string, to: string) => string
   healthEndpoint: string
   validateHealthResponse: (response: string) => boolean
+}
+
+// DEX node configuration
+export interface DexNodeConfig {
+  id: string
+  url: string
+}
+
+// DEX configuration types
+export interface DexPairConfig {
+  pair: string // from-to e.g., "STXTZ-XTZ"
+  contract: string // Contract address
+  rpcPath?: string // RPC endpoint path (GET)
+  viewCall?: { // For view calls (POST)
+    viewName: string
+    input?: any
+    chain_id?: string
+    unparsing_mode?: 'Readable' | 'Optimized' | 'Optimized_legacy'
+  }
+  extractPriceData: (data: any) => { timestamp: number; price: number }
+  healthCheck?: {
+    endpoint: string
+    validateResponse: (response: string) => boolean
+  }
 }

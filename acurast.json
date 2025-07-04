@@ -11,20 +11,59 @@
       "execution": {
         "type": "interval",
         "intervalInMs": 3600000,
-        "numberOfExecutions": 240
+        "numberOfExecutions": 730,
+        "maxExecutionTimeInMs": 3570000
       },
-      "maxAllowedStartDelayInMs": 10000,
+      "maxAllowedStartDelayInMs": 30000,
       "usageLimit": {
         "maxMemory": 0,
         "maxNetworkRequests": 0,
         "maxStorage": 0
       },
-      "numberOfReplicas": 10,
-      "requiredModules": [],
-      "minProcessorReputation": 500000,
-      "maxCostPerExecution": 20000000000,
+      "numberOfReplicas": 40,
+      "requiredModules": [
+        "DataEncryption"
+      ],
+      "minProcessorReputation": 0,
+      "maxCostPerExecution": 4007140000,
       "includeEnvironmentVariables": [],
-      "processorWhitelist": []
+      "processorWhitelist": [],
+      "minProcessorVersions": {
+        "android": "1.11.0"
+      }
+    },
+    "mutable": {
+      "projectName": "oracle",
+      "fileUrl": "dist/bundle.js",
+      "network": "canary",
+      "onlyAttestedDevices": true,
+      "assignmentStrategy": {
+        "type": "Single"
+      },
+      "execution": {
+        "type": "interval",
+        "intervalInMs": 3600000,
+        "numberOfExecutions": 48,
+        "maxExecutionTimeInMs": 3570000
+      },
+      "maxAllowedStartDelayInMs": 30000,
+      "usageLimit": {
+        "maxMemory": 0,
+        "maxNetworkRequests": 0,
+        "maxStorage": 0
+      },
+      "numberOfReplicas": 3,
+      "requiredModules": [
+        "DataEncryption"
+      ],
+      "minProcessorReputation": 0,
+      "maxCostPerExecution": 10007140000,
+      "includeEnvironmentVariables": [],
+      "processorWhitelist": [],
+      "minProcessorVersions": {
+        "android": 91
+      },
+      "mutability": "Mutable"
     },
     "test": {
       "projectName": "oracle",
@@ -36,20 +75,28 @@
       },
       "execution": {
         "type": "onetime",
-        "maxExecutionTimeInMs": 7200000
+        "maxExecutionTimeInMs": 14400000
       },
-      "maxAllowedStartDelayInMs": 10000,
+      "maxAllowedStartDelayInMs": 30000,
       "usageLimit": {
         "maxMemory": 0,
         "maxNetworkRequests": 0,
         "maxStorage": 0
       },
       "numberOfReplicas": 10,
-      "requiredModules": [],
-      "minProcessorReputation": 0,
+      "requiredModules": [
+        "DataEncryption"
+      ],
+      "minProcessorReputation": 500000,
       "maxCostPerExecution": 300000000000,
-      "includeEnvironmentVariables": [],
-      "processorWhitelist": []
+      "includeEnvironmentVariables": [
+        "SENTRY_KEY",
+        "SENTRY_POST_URL"
+      ],
+      "processorWhitelist": [],
+      "minProcessorVersions": {
+        "android": "1.11.0"
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ import { GlobalWithAcurastFunctions } from "./global"
 declare global {
   var _STD_: GlobalWithAcurastFunctions["_STD_"]
   var httpGET: GlobalWithAcurastFunctions["httpGET"]
+  var httpPOST: GlobalWithAcurastFunctions["httpPOST"]
 }
 
 global._STD_ = {
@@ -30,3 +31,7 @@ global._STD_ = {
 }
 
 global.httpGET = jest.fn()
+global.httpPOST = jest.fn()
+
+// Mock @sentry/node module
+jest.mock('@sentry/node', () => ({}), { virtual: true })
